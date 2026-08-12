@@ -42,8 +42,46 @@ Two rules the motion follows:
   an inline script in `<head>` removes before first paint. If the script never runs, the `.no-js`
   rules keep every animated element visible.
 
-Markup hooks: `data-enter`, `data-stagger`, `data-parallax`, and
-`data-count` / `data-prefix` / `data-suffix` / `data-decimals`.
+### Markup hooks
+
+| Hook | Does |
+|---|---|
+| `data-enter` | joins the on-load entrance ladder (90ms apart, in document order) |
+| `.reveal` + `data-reveal="rail\|figure"` | reveals on scroll; the variant sets direction and duration via `--rx` / `--ry` / `--rdur` |
+| `data-stagger` | children reveal as a diagonal wave from the group's top-left |
+| `data-draw` | SVG inside draws itself — see below |
+| `data-odo` + `data-prefix` / `data-suffix` | odometer digit-roll |
+| `data-count` (+ `data-count-manual`) | plain count-up; manual = another module triggers it |
+| `data-console` | the tenant-isolation panel |
+| `data-pin` | the pinned horizontal stage |
+| `data-parallax="0.12"` | drifts at a fraction of scroll speed |
+
+### Drawing an SVG
+
+Every animated stroke carries `pathLength="100"` and `class="stroke"`, with
+`style="--i:N"` setting its place on a 45ms ladder. Because `pathLength`
+normalises any geometry to 100 units, one `stroke-dasharray` value draws any
+path — there is no measuring JavaScript, and the diagrams stay hand-editable.
+Filled shapes use `class="fill"` on the same ladder. Anything transformed needs
+a `fx-` class prefix, which carries `transform-box: fill-box` (without it, SVG
+`transform-origin` resolves against the viewport — the most common silent
+failure in hand-written SVG animation).
+
+### The three rules main.js keeps
+
+1. **One rAF loop.** Every scroll-linked job registers in `frameJobs`; the loop
+   stops itself when no job reports work. No second loop, no second listener.
+2. **Read then write.** A frame job batches all `getBoundingClientRect` reads
+   before any style write, so nothing thrashes layout.
+3. **The reduced-motion end state is the design.** Every animation is only the
+   assembly of a composition that already reads standing still — the console
+   shows `patched`, the bar sits at 90, the diagram is fully drawn.
+
+### Colour budget
+
+`--signal-warn` (#e2795a) has a hard budget of **exactly two uses site-wide**:
+the leaked `store_id` in the console, and the SECURITY kicker. A third use means
+the identity has drifted.
 
 ## Running locally
 

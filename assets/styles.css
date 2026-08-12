@@ -32,6 +32,16 @@
   --accent:      #4dd4ac;
   --accent-dim:  #2a6b5a;
 
+  /* One step between --bg and --surface. Used only by the measurement band. */
+  --surface-plate: #101416;
+  /* The 24px ground plane under EVERY generated SVG. Sharing it is what makes
+     five unrelated drawings read as one system. */
+  --grid-line:     rgba(228, 235, 238, 0.055);
+  --accent-soft:   rgba(77, 212, 172, 0.12);
+  /* BUDGET: exactly two uses site-wide — the leaked store_id in the console, and
+     the SECURITY kicker. A third use means the identity has drifted. 7.2:1 on --bg. */
+  --signal-warn:   #e2795a;
+
   /* Type */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
@@ -50,10 +60,16 @@
   --container: 68rem;
   --prose: 44rem;
 
+  --fs-micro: 0.6875rem;
+
   --radius: 4px;
-  --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  /* Decelerating curve for entrances — fast out of the gate, long soft landing */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Three curves, no more. A fourth means the animation is wrong. */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);          /* hover, colour, state only */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);    /* every entrance and settle   */
+  /* Symmetric in-out, reserved for a measurement travelling a fixed distance and
+     stopping: stroke draws, the mask sweep, the 7→90 bar. The symmetry is what
+     makes those read as mechanical rather than organic. */
+  --ease-meas: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 
@@ -77,6 +93,9 @@ html {
 html.js-scroll { scroll-behavior: auto; }
 
 body {
+  /* clip, never hidden — hidden creates a scroll container and silently breaks
+     position:sticky on every descendant, which this page now depends on */
+  overflow-x: clip;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
@@ -936,10 +955,15 @@ p + p { margin-top: var(--s-2); }
 
 /* --- Reveal on scroll --- */
 
+/* Parametric: an element arrives from its own position in the layout, not from a
+   generic nowhere. Direction and duration are set by markup, so a right-hand rail
+   slides in from the right and a figure arrives after the text it illustrates —
+   all for zero extra JavaScript. */
 .reveal {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 650ms var(--ease-out), transform 650ms var(--ease-out);
+  transform: translate3d(var(--rx, 0), var(--ry, 16px), 0);
+  transition: opacity var(--rdur, 650ms) var(--ease-out),
+              transform var(--rdur, 650ms) var(--ease-out);
   transition-delay: var(--d, 0ms);
 }
 
@@ -947,6 +971,37 @@ p + p { margin-top: var(--s-2); }
   opacity: 1;
   transform: none;
 }
+
+[data-reveal="rail"]   { --rx: 20px; --ry: 0; --rdur: 850ms; }
+[data-reveal="figure"] { --ry: 20px; --rdur: 850ms; }
+
+/* --- SVG draw-on ---------------------------------------------------------
+   Every animated stroke carries pathLength="100", so ONE dasharray value draws
+   any geometry regardless of its real length. No getTotalLength, no measurement
+   pass, no inline style writes from JS — and the diagrams stay hand-editable. */
+
+[data-draw] .stroke {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 900ms var(--ease-meas);
+  transition-delay: calc(var(--i, 0) * 45ms);
+}
+
+[data-draw].is-visible .stroke,
+[data-draw].is-entered .stroke { stroke-dashoffset: 0; }
+
+[data-draw] .fill {
+  opacity: 0;
+  transition: opacity 520ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 45ms);
+}
+
+[data-draw].is-visible .fill,
+[data-draw].is-entered .fill { opacity: 1; }
+
+/* SVG transform-origin resolves against the viewport unless this is set — the
+   single most common silent failure in hand-written SVG animation. */
+[data-draw] [class^="fx-"] { transform-box: fill-box; }
 
 /* --- Marquee --- */
 
@@ -1033,6 +1088,13 @@ p + p { margin-top: var(--s-2); }
 
 .no-js .mask-inner { transform: none; }
 
+/* …including every generated diagram, which must render fully drawn */
+.no-js [data-draw] .stroke { stroke-dashoffset: 0; }
+.no-js [data-draw] .fill { opacity: 1; }
+.no-js .mask-layer { clip-path: inset(0); }
+.no-js .fx-candle { transform: scaleY(1); }
+.no-js .fx-scan { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 
@@ -1073,4 +1135,582 @@ p + p { margin-top: var(--s-2); }
   color: var(--accent);
   line-height: 1;
   letter-spacing: -0.04em;
+}
+
+
+/* 13. Instrument layer ===================================================== */
+
+/* Shared ground plane. Every generated drawing sits on the same 24px grid —
+   that is what makes unrelated diagrams read as one system. */
+.grid-ground {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.micro {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* --- Hero readout --------------------------------------------------------- */
+
+.readout {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--s-2);
+}
+
+.readout svg { width: 100%; height: auto; }
+
+.readout figcaption {
+  margin-top: var(--s-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (min-width: 64rem) {
+  .hero .container {
+    display: grid;
+    grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+    column-gap: var(--s-8);
+    align-items: center;
+  }
+}
+
+@media (max-width: 63.999rem) {
+  .readout { max-width: 26rem; margin-top: var(--s-4); }
+}
+
+/* --- Measurement band ----------------------------------------------------- */
+
+.plate {
+  background: var(--surface-plate);
+  border-block: 1px solid var(--border);
+  padding-block: var(--s-8);
+}
+
+.plate .metrics { gap: 0; }
+
+.plate .metric {
+  padding: 0 var(--s-3);
+  background: none;
+  border: 0;
+}
+
+.plate .metric-value { font-size: clamp(2.25rem, 5vw, 3.5rem); }
+
+@media (min-width: 44rem) {
+  .plate .metric + .metric { border-left: 1px solid var(--border); }
+}
+
+/* The 7 → 90 window bar */
+.bar {
+  margin-top: var(--s-2);
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.bar-track {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(var(--w, 0));
+  transform-origin: left;
+  transition: transform 400ms var(--ease-meas);
+}
+
+/* --- Odometer ------------------------------------------------------------- */
+
+.odo {
+  display: inline-flex;
+  align-items: flex-start;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.odo-digit { display: block; height: 1em; overflow: hidden; }
+
+.odo-strip {
+  display: block;
+  transform: translateY(calc(var(--i, 0) * -1em));
+  transition: transform var(--odur, 1500ms) var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+
+.odo-cell,
+.odo-lit { display: block; height: 1em; line-height: 1em; }
+
+/* Literal cells carry the spaces in " days" and " / 10" — without pre they
+   collapse and the value runs into its unit. */
+.odo-lit { white-space: pre; }
+
+/* --- Console -------------------------------------------------------------- */
+
+.console {
+  margin: var(--s-3) 0 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.console-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-1);
+  padding: 0.5rem var(--s-2);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.console-title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.console-tabs { display: flex; gap: 2px; }
+
+.console-tabs button {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 150ms var(--ease), border-color 150ms var(--ease);
+}
+
+.console-tabs button:hover { color: var(--text); }
+
+.console-tabs button[aria-selected="true"] {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+  background: var(--accent-soft);
+}
+
+.console-body {
+  margin: 0;
+  padding: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: var(--muted);
+  overflow-x: auto;
+}
+
+.console-body .ln,
+.console-body .row { display: block; white-space: pre; }
+
+.console-body .kw { color: var(--text); }
+.console-body .ok { color: var(--accent); }
+
+/* A fixed em height on a known single line — not max-height, not 0fr→1fr.
+   The target is exact, so the layout animation is one line tall and cheap. */
+.ln--fix {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding-left: 0.5rem;
+  border-left: 2px solid transparent;
+  transition: height 320ms var(--ease-out),
+              opacity 240ms var(--ease),
+              border-color 240ms var(--ease);
+}
+
+[data-console][data-state="patched"] .ln--fix {
+  height: 1.7em;
+  opacity: 1;
+  border-left-color: var(--accent);
+}
+
+.row--foreign {
+  height: 1.7em;
+  opacity: 1;
+  overflow: hidden;
+  transition: height 320ms var(--ease-out), opacity 240ms var(--ease);
+}
+
+[data-console][data-state="patched"] .row--foreign { height: 0; opacity: 0; }
+
+.leak { color: var(--signal-warn); }   /* budget use 1 of 2 */
+
+.console-count { position: relative; display: block; }
+.console-count .c2 { display: none; }
+[data-console][data-state="patched"] .console-count .c1 { display: none; }
+[data-console][data-state="patched"] .console-count .c2 { display: block; }
+
+.console figcaption {
+  padding: 0 var(--s-2) var(--s-2);
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* --- Experience kicker tags ----------------------------------------------- */
+
+.bullets li.k { padding-left: 0; }
+.bullets li.k::before { content: none; }
+
+@media (min-width: 56rem) {
+  .bullets li.k {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: var(--s-2);
+  }
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-dim);
+  padding-top: 0.3em;
+}
+
+.kicker--warn { color: var(--signal-warn); }   /* budget use 2 of 2 */
+
+/* --- Sticky rails --------------------------------------------------------- */
+
+@media (min-width: 64rem) {
+  .with-rail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    gap: var(--s-8);
+    align-items: start;
+  }
+  .rail { position: sticky; top: 7rem; }
+  .job-date { position: sticky; top: 7rem; }
+}
+
+.rail dl { margin: 0; display: grid; gap: var(--s-2); }
+.rail dt { margin-bottom: 0.15rem; }
+.rail dd { margin: 0; font-size: 0.875rem; color: var(--text); }
+.rail dd + dt { margin-top: var(--s-2); }
+
+/* --- Project card faces --------------------------------------------------- */
+
+.card { padding-top: 0; }
+
+.card-face {
+  aspect-ratio: 16 / 9;
+  margin: 0 calc(-1 * var(--s-3));
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.card-face svg { width: 100%; height: 100%; display: block; }
+
+.card-index { padding-top: var(--s-3); }
+
+.fx-candle {
+  transform: scaleY(0);
+  transform-origin: 50% 100%;
+  transition: transform 520ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 26ms);
+}
+
+[data-draw].is-visible .fx-candle { transform: scaleY(1); }
+
+.mask-layer {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1150ms var(--ease-meas);
+}
+
+[data-draw].is-visible .mask-layer { clip-path: inset(0); }
+
+.fx-scan {
+  opacity: 0;
+  transition: transform 1150ms var(--ease-meas), opacity 200ms linear 950ms;
+}
+
+[data-draw].is-visible .fx-scan { transform: translateX(268px); opacity: 1; }
+
+/* --- Skills as architecture layers ---------------------------------------- */
+
+.layer {
+  display: grid;
+  gap: var(--s-1);
+  padding: var(--s-2) 0;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 56rem) {
+  .layer { grid-template-columns: 9rem 1fr; gap: var(--s-3); align-items: baseline; }
+}
+
+.layer:last-child { border-bottom: 1px solid var(--border); }
+
+.layer-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.layer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.layer li {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  transition: color 150ms var(--ease), border-color 150ms var(--ease);
+}
+
+.layer li:hover { color: var(--text); border-color: var(--accent-dim); }
+
+/* --- Detail page pipeline figure + TOC ------------------------------------ */
+
+.figure {
+  margin: var(--s-3) 0 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--s-3) var(--s-2) var(--s-2);
+}
+
+.figure svg { width: 100%; height: auto; }
+
+.figure figcaption {
+  margin-top: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.toc { display: none; }
+
+@media (min-width: 68rem) {
+  .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 11rem; gap: var(--s-8); align-items: start; }
+  .toc { display: block; position: sticky; top: 7rem; }
+}
+
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+
+.toc a {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-left: 1px solid var(--border);
+  padding-left: 0.625rem;
+  display: block;
+}
+
+.toc a:hover,
+.toc a.is-active { color: var(--accent); border-left-color: var(--accent); }
+
+
+/* 14. Kinetic layer ======================================================== */
+/* The four effects requested explicitly. Every one is gated on .js-fx (added
+   only when reduced motion is off) and on a pointer/width guard, so none of it
+   fires on a phone, with JS off, or for a reduced-motion visitor. */
+
+/* --- Hero particle field --- */
+
+.hero { position: relative; }
+.hero > .container { position: relative; z-index: 1; }
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out);
+}
+
+html.js-fx .hero-canvas.is-on { opacity: 1; }
+
+/* --- Custom cursor ring ---
+   The native cursor is deliberately NOT hidden: the ring is an accent that
+   trails it, so pointer precision and accessibility are unaffected. */
+
+.cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 26px; height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 1px solid var(--accent-dim);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 90;
+  opacity: 0;
+  transform: translate3d(-100px, -100px, 0);
+  transition: opacity 250ms var(--ease),
+              width 220ms var(--ease-out), height 220ms var(--ease-out),
+              margin 220ms var(--ease-out),
+              border-color 220ms var(--ease), background-color 220ms var(--ease);
+}
+
+html.js-fx .cursor.is-on { opacity: 1; }
+
+.cursor.is-active {
+  width: 46px; height: 46px;
+  margin: -23px 0 0 -23px;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.cursor-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 180ms var(--ease);
+}
+
+.cursor.is-active .cursor-label { opacity: 1; }
+
+/* --- Page transition veil --- */
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  pointer-events: none;
+  transform: scaleY(0);
+  transform-origin: 50% 100%;
+}
+
+.veil.is-covering {
+  transform: scaleY(1);
+  transition: transform 420ms var(--ease-out);
+}
+
+.veil.is-lifting {
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  transition: transform 520ms var(--ease-out);
+}
+
+/* --- Pinned horizontal projects ---
+   DEFAULT (no JS, reduced motion, narrow, touch) is an ordinary responsive
+   grid. The pinning is layered on top only when .js-pin is present. */
+
+.pin-track {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+}
+
+@media (min-width: 44rem) {
+  .pin-track { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 68rem) {
+  .pin-track { grid-template-columns: repeat(3, 1fr); }
+}
+
+html.js-pin .pin-stage { height: var(--stage-h, 300vh); }
+
+html.js-pin .pin-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+html.js-pin .pin-track {
+  display: flex;
+  grid-template-columns: none;
+  width: max-content;
+  gap: var(--s-4);
+  transform: translate3d(calc(var(--px, 0) * -1px), 0, 0);
+  will-change: transform;
+}
+
+html.js-pin .pin-track > .card { flex: 0 0 32rem; }
+
+/* Wider cards need a shallower face, or the card cannot fit inside a 100vh
+   stage alongside the section heading and the progress bar. */
+html.js-pin .pin-track .card-face { aspect-ratio: 2.4 / 1; }
+
+.pin-progress {
+  display: none;
+  height: 2px;
+  margin-top: var(--s-4);
+  background: var(--border);
+}
+
+html.js-pin .pin-progress { display: block; }
+
+.pin-progress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(var(--pp, 0));
+  transform-origin: left;
+}
+
+
+/* Reduced motion: the kinetic layer never initialises (JS gate), and anything
+   that did render settles instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-canvas,
+  .cursor,
+  .veil { display: none !important; }
+
+  .odo-strip,
+  .bar-fill,
+  .ln--fix,
+  .row--foreign,
+  .mask-layer,
+  .fx-candle,
+  .fx-scan,
+  [data-draw] .stroke,
+  [data-draw] .fill { transition: none !important; }
+
+  [data-draw] .stroke { stroke-dashoffset: 0 !important; }
+  [data-draw] .fill { opacity: 1 !important; }
+  .mask-layer { clip-path: inset(0) !important; }
+  .fx-candle { transform: scaleY(1) !important; }
+  .fx-scan { display: none !important; }
 }

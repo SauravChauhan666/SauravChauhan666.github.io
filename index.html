@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Runs before first paint: with JS on, .reveal starts hidden and main.js animates it in.
-     With JS off, the .no-js rule keeps everything visible. -->
+<!-- Runs before first paint: with JS on, animated elements start hidden and
+     main.js brings them in. With JS off, the .no-js rules keep everything visible. -->
 <script>document.documentElement.classList.remove("no-js");</script>
 
 <title>Saurav Chauhan — Full-Stack Developer</title>
@@ -87,35 +87,81 @@
 
 <main id="main">
 
-  <!-- Hero ------------------------------------------------------------- -->
+  <!-- Hero -------------------------------------------------------------- -->
   <section class="hero">
+    <canvas class="hero-canvas" aria-hidden="true"></canvas>
+
     <div class="container" data-parallax="0.12">
-      <p class="hero-eyebrow" data-enter>
-        <span class="status-dot" aria-hidden="true"></span>
-        Delhi NCR, India · Open to opportunities
-      </p>
+      <div>
+        <p class="hero-eyebrow" data-enter>
+          <span class="status-dot" aria-hidden="true"></span>
+          Delhi NCR, India · Open to opportunities
+        </p>
 
-      <h1 data-enter><span class="mask"><span class="mask-inner">Saurav Chauhan</span></span></h1>
+        <h1 data-enter><span class="mask"><span class="mask-inner">Saurav Chauhan</span></span></h1>
 
-      <p class="hero-role" data-enter>
-        Full-stack developer<span class="sep">/</span>Vue &amp; Nuxt<span class="sep">/</span>NestJS<span class="sep">/</span>PostgreSQL
-      </p>
+        <p class="hero-role" data-enter>
+          Full-stack developer<span class="sep">/</span>Vue &amp; Nuxt<span class="sep">/</span>NestJS<span class="sep">/</span>PostgreSQL
+        </p>
 
-      <p class="hero-summary" data-enter>
-        I ship features to a <strong>live multi-tenant eCommerce SaaS</strong> used by merchants worldwide —
-        owning them end to end, from database schema and migrations through REST APIs and Shopify
-        integrations to the merchant-facing UI on top.
-      </p>
+        <p class="hero-summary" data-enter>
+          I ship features to a <strong>live multi-tenant eCommerce SaaS</strong> used by merchants worldwide —
+          owning them end to end, from database schema and migrations through REST APIs and Shopify
+          integrations to the merchant-facing UI on top.
+        </p>
 
-      <div class="hero-actions" data-enter>
-        <a class="btn btn-primary" href="/resume.pdf" target="_blank" rel="noopener">Download résumé</a>
-        <a class="btn" href="https://github.com/SauravChauhan666" target="_blank" rel="noopener">GitHub ↗</a>
-        <a class="btn" href="mailto:2401sauravchauhan@gmail.com">Email</a>
+        <div class="hero-actions" data-enter>
+          <a class="btn btn-primary" href="/resume.pdf" target="_blank" rel="noopener">Download résumé</a>
+          <a class="btn" href="https://github.com/SauravChauhan666" target="_blank" rel="noopener">GitHub ↗</a>
+          <a class="btn" href="mailto:2401sauravchauhan@gmail.com">Email</a>
+        </div>
       </div>
+
+      <!-- The request path I work across, drawn from the actual stack -->
+      <figure class="readout grid-ground" data-enter data-draw>
+        <svg viewBox="0 0 420 250" role="img" aria-labelledby="readout-t">
+          <title id="readout-t">The Sparq request path: merchant browser to Nuxt dashboard to NestJS API, through TypeORM to PostgreSQL, with the Shopify Admin API alongside</title>
+          <g fill="none" stroke="var(--border-lit)" stroke-width="1">
+            <rect class="fill" style="--i:0" x="92" y="10"  width="150" height="34" rx="3"/>
+            <rect class="fill" style="--i:1" x="92" y="76"  width="150" height="34" rx="3"/>
+            <rect class="fill" style="--i:2" x="92" y="142" width="150" height="34" rx="3" fill="var(--accent-soft)" stroke="var(--accent-dim)"/>
+            <rect class="fill" style="--i:4" x="92" y="208" width="150" height="34" rx="3"/>
+            <rect class="fill" style="--i:3" x="278" y="142" width="132" height="34" rx="3"/>
+          </g>
+
+          <g fill="none" stroke="var(--accent-dim)" stroke-width="1.25">
+            <path class="stroke" style="--i:0" pathLength="100" d="M167 44 L167 76"/>
+            <path class="stroke" style="--i:1" pathLength="100" d="M167 110 L167 142"/>
+            <path class="stroke" style="--i:2" pathLength="100" d="M167 176 L167 208"/>
+            <path class="stroke" style="--i:3" pathLength="100" d="M242 159 L278 159"/>
+          </g>
+
+          <g fill="var(--accent-dim)">
+            <path class="fill" style="--i:0" d="M167 76 l-3.5 -6 h7 z"/>
+            <path class="fill" style="--i:1" d="M167 142 l-3.5 -6 h7 z"/>
+            <path class="fill" style="--i:2" d="M167 208 l-3.5 -6 h7 z"/>
+            <path class="fill" style="--i:3" d="M278 159 l-6 -3.5 v7 z"/>
+          </g>
+
+          <g font-family="ui-monospace, monospace" font-size="11" fill="var(--muted)" text-anchor="middle">
+            <text class="fill" style="--i:0" x="167" y="31">merchant browser</text>
+            <text class="fill" style="--i:1" x="167" y="97">Nuxt dashboard</text>
+            <text class="fill" style="--i:2" x="167" y="163" fill="var(--accent)">NestJS API</text>
+            <text class="fill" style="--i:4" x="167" y="229">PostgreSQL</text>
+            <text class="fill" style="--i:3" x="344" y="163">Shopify Admin API</text>
+          </g>
+
+          <g font-family="ui-monospace, monospace" font-size="10" fill="var(--muted)">
+            <text class="fill" style="--i:2" x="176" y="196" text-anchor="start">TypeORM</text>
+            <text class="fill" style="--i:3" x="344" y="134" text-anchor="middle">webhooks · OAuth</text>
+          </g>
+        </svg>
+        <figcaption>Sparq — the path a request takes</figcaption>
+      </figure>
     </div>
   </section>
 
-  <!-- Tech marquee ----------------------------------------------------- -->
+  <!-- Tech marquee ------------------------------------------------------ -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee-track">
       <div class="marquee-group">
@@ -133,7 +179,7 @@
     </div>
   </div>
 
-  <!-- About ------------------------------------------------------------ -->
+  <!-- About -------------------------------------------------------------- -->
   <section class="section" id="about">
     <div class="container">
       <div class="section-head">
@@ -142,43 +188,69 @@
         <span class="section-rule" aria-hidden="true"></span>
       </div>
 
-      <div class="prose reveal">
-        <p class="lead">
-          I'm a full-stack developer at BitQit, working on <strong>Sparq</strong> — a Shopify search and
-          merchandising platform. Day to day that means a NestJS / TypeORM / PostgreSQL backend on one side
-          and a Vue.js / Nuxt dashboard on the other, plus the Shopify Admin API, webhooks and OAuth flows
-          holding the two together.
-        </p>
-        <p class="muted">
-          I'm finishing a B.Tech in Artificial Intelligence &amp; Data Science at GGSIPU, which is where the
-          other half of my work comes from — computer vision, PyTorch, and LLM integration. It's a useful
-          combination: I can build the product and the model behind it.
-        </p>
-        <p class="muted">
-          What I'm best at is the underspecified problem. Give me a vague bug report or an undocumented
-          migration path, and I'll investigate it across services and come back with the fix plus the
-          migration steps and documentation the team needs to actually run it.
-        </p>
-      </div>
+      <div class="with-rail">
+        <div class="prose reveal">
+          <p class="lead">
+            I'm a full-stack developer at BitQit, working on <strong>Sparq</strong> — a Shopify search and
+            merchandising platform. Day to day that means a NestJS / TypeORM / PostgreSQL backend on one side
+            and a Vue.js / Nuxt dashboard on the other, plus the Shopify Admin API, webhooks and OAuth flows
+            holding the two together.
+          </p>
+          <p class="muted">
+            I'm finishing a B.Tech in Artificial Intelligence &amp; Data Science at GGSIPU, which is where the
+            other half of my work comes from — computer vision, PyTorch, and LLM integration. It's a useful
+            combination: I can build the product and the model behind it.
+          </p>
+          <p class="muted">
+            What I'm best at is the underspecified problem. Give me a vague bug report or an undocumented
+            migration path, and I'll investigate it across services and come back with the fix plus the
+            migration steps and documentation the team needs to actually run it.
+          </p>
+        </div>
 
-      <div class="metrics" data-stagger style="margin-top: 3rem;">
-        <div class="metric">
-          <p class="metric-value" data-count="90" data-suffix=" days">90 days</p>
+        <aside class="rail reveal" data-reveal="rail">
+          <dl>
+            <dt class="micro">Currently</dt>
+            <dd>Associate Software Developer, BitQit</dd>
+            <dt class="micro">Working on</dt>
+            <dd>Sparq — Shopify search &amp; merchandising</dd>
+            <dt class="micro">Stack</dt>
+            <dd>NestJS · TypeORM · PostgreSQL · Nuxt 4</dd>
+            <dt class="micro">Based in</dt>
+            <dd>Delhi NCR, India</dd>
+            <dt class="micro">Graduating</dt>
+            <dd>May 2026 · CGPA 8.7</dd>
+          </dl>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- Measurement band --------------------------------------------------- -->
+  <section class="plate" aria-label="By the numbers">
+    <div class="container">
+      <div class="metrics" data-stagger>
+        <div class="metric" data-bar>
+          <p class="metric-value odo" data-odo="90" data-suffix=" days" data-count-manual></p>
           <p class="metric-label">merchant analytics reporting window I shipped, up from 7</p>
+          <p class="bar">
+            <span class="micro">7 →</span>
+            <span class="bar-track"><span class="bar-fill"></span></span>
+          </p>
         </div>
         <div class="metric">
-          <p class="metric-value" data-count="5" data-suffix=" yrs">5 yrs</p>
+          <p class="metric-value odo" data-odo="5" data-suffix=" yrs"></p>
           <p class="metric-label">of historical market data ingested and validated in QuantaLab</p>
         </div>
         <div class="metric">
-          <p class="metric-value" data-count="8.7" data-decimals="1" data-suffix=" / 10">8.7 / 10</p>
+          <p class="metric-value odo" data-odo="8.7" data-suffix=" / 10"></p>
           <p class="metric-label">CGPA, B.Tech in Artificial Intelligence &amp; Data Science</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Experience ------------------------------------------------------- -->
+  <!-- Experience --------------------------------------------------------- -->
   <section class="section" id="experience">
     <div class="container">
       <div class="section-head">
@@ -189,7 +261,7 @@
 
       <div class="timeline" data-stagger>
 
-        <article class="job reveal">
+        <article class="job">
           <p class="job-date">May 2026 — Present</p>
           <div class="job-body">
             <h3>BitQit Pvt Ltd</h3>
@@ -199,44 +271,72 @@
             <p class="job-meta">Delhi, India</p>
 
             <ul class="bullets">
-              <li>
-                Delivered the <strong>collection filters feature end to end across two services</strong> — a
-                first-class Filter resource in the NestJS / TypeORM / PostgreSQL API (per-collection filter
-                entities, colour-group palettes, layout settings, facet sync and a diagnostic facets endpoint,
-                with the schema migrations and unique constraints behind them) and the Nuxt dashboard UI
-                merchants configure it from, including a live storefront preview and theme config export.
+              <li class="k">
+                <span class="kicker">Filters</span>
+                <span>Delivered the <strong>collection filters feature end to end across two services</strong> — a
+                  first-class Filter resource in the NestJS / TypeORM / PostgreSQL API (per-collection filter
+                  entities, colour-group palettes, layout settings, facet sync and a diagnostic facets endpoint,
+                  with the schema migrations and unique constraints behind them) and the Nuxt dashboard UI
+                  merchants configure it from, including a live storefront preview and theme config export.</span>
               </li>
-              <li>
-                Found and fixed a <strong>cross-store IDOR vulnerability</strong> that let a request scoped to
-                one merchant store reach another store's data on a shared multi-tenant platform.
+              <li class="k">
+                <span class="kicker kicker--warn">Security</span>
+                <span>Found and fixed a <strong>cross-store IDOR vulnerability</strong> that let a request scoped
+                  to one merchant store reach another store's data on a shared multi-tenant platform.</span>
               </li>
-              <li>
-                Implemented support for Shopify's move to <strong>expiring offline access tokens</strong>
-                across the merchant portal and the Shopify backend — schema columns and migration, token
-                service and refresh handling — and replaced a migration cron with an operator-driven admin
-                endpoint after code review.
+            </ul>
+
+            <!-- The one element on this site that shows a bug being closed
+                 rather than claiming one was. Ships in the patched state. -->
+            <figure class="console" data-console data-state="patched">
+              <div class="console-bar">
+                <span class="console-title">cross-store IDOR — collections lookup</span>
+                <span class="console-tabs" role="tablist" aria-label="Query state">
+                  <button type="button" role="tab" data-set="vulnerable" aria-selected="false" tabindex="-1">vulnerable</button>
+                  <button type="button" role="tab" data-set="patched" aria-selected="true" tabindex="0">patched</button>
+                </span>
+              </div>
+
+              <pre class="console-body"><code><span class="ln"><span class="kw">SELECT</span> id, store_id, handle <span class="kw">FROM</span> collections</span><span class="ln"><span class="kw">WHERE</span>  handle = $1</span><span class="ln ln--fix"><span class="kw">AND</span>    store_id = $2</span><span class="ln"> </span><span class="row">  id   | store_id | handle</span><span class="row"> ------+----------+--------------</span><span class="row">  1042 | 7731     | summer-sale</span><span class="row row--foreign">  2287 | <span class="leak">9004</span>     | summer-sale</span><span class="console-count"><span class="c1"> (2 rows)</span><span class="c2 ok"> (1 row)</span></span></code></pre>
+
+              <figcaption>
+                Without the tenant predicate, a lookup scoped to one store returned a row belonging to another.
+                Adding <code>store_id</code> to the WHERE clause scopes every query to the calling store.
+              </figcaption>
+            </figure>
+
+            <ul class="bullets">
+              <li class="k">
+                <span class="kicker">Tokens</span>
+                <span>Implemented support for Shopify's move to <strong>expiring offline access tokens</strong>
+                  across the merchant portal and the Shopify backend — schema columns and migration, token
+                  service and refresh handling — and replaced a migration cron with an operator-driven admin
+                  endpoint after code review.</span>
               </li>
-              <li>
-                Built the <strong>merchant analytics dashboard</strong> — searches, zero-result queries,
-                click-through and conversion — from the Nuxt UI through to the analytics APIs behind it, and
-                extended the reporting window from 7 to <strong>90 days</strong>.
+              <li class="k">
+                <span class="kicker">Analytics</span>
+                <span>Built the <strong>merchant analytics dashboard</strong> — searches, zero-result queries,
+                  click-through and conversion — from the Nuxt UI through to the analytics APIs behind it, and
+                  extended the reporting window from 7 to <strong>90 days</strong>.</span>
               </li>
-              <li>
-                Investigated the blast radius of Shopify's deprecation of <code>ORDER_STATUS</code> and
-                <code>ALL</code> ScriptTag scopes across live merchant stores, wrote read-only
-                Node/PostgreSQL tooling to identify every affected client, validated the plan against a local
-                mock Shopify API, and handed the team a runnable migration path.
+              <li class="k">
+                <span class="kicker">Scopes</span>
+                <span>Investigated the blast radius of Shopify's deprecation of <code>ORDER_STATUS</code> and
+                  <code>ALL</code> ScriptTag scopes across live merchant stores, wrote read-only
+                  Node/PostgreSQL tooling to identify every affected client, validated the plan against a local
+                  mock Shopify API, and handed the team a runnable migration path.</span>
               </li>
-              <li>
-                Migrated the dashboard frontend from <strong>Nuxt 3 to Nuxt 4</strong> against an undocumented
-                upgrade path — reverse-engineered the breaking changes from build failures and shipped it with
-                no regressions.
+              <li class="k">
+                <span class="kicker">Migration</span>
+                <span>Migrated the dashboard frontend from <strong>Nuxt 3 to Nuxt 4</strong> against an
+                  undocumented upgrade path — reverse-engineered the breaking changes from build failures and
+                  shipped it with no regressions.</span>
               </li>
             </ul>
           </div>
         </article>
 
-        <article class="job reveal">
+        <article class="job">
           <p class="job-date">Jul — Aug 2025</p>
           <div class="job-body">
             <h3>Prodigal AI</h3>
@@ -244,13 +344,15 @@
             <p class="job-meta">Delhi, India</p>
 
             <ul class="bullets">
-              <li>
-                Engineered a <strong>context-aware AI chat and document-summarization feature</strong> for an
-                in-house messaging application, integrating the ChatGPT API into the existing backend.
+              <li class="k">
+                <span class="kicker">LLM</span>
+                <span>Engineered a <strong>context-aware AI chat and document-summarization feature</strong> for
+                  an in-house messaging application, integrating the ChatGPT API into the existing backend.</span>
               </li>
-              <li>
-                Designed prompt pipelines that turn dense technical conversation history into
-                <strong>investor-friendly summaries</strong>, iterating on an ambiguous, open-ended requirement.
+              <li class="k">
+                <span class="kicker">Prompting</span>
+                <span>Designed prompt pipelines that turn dense technical conversation history into
+                  <strong>investor-friendly summaries</strong>, iterating on an ambiguous, open-ended requirement.</span>
               </li>
             </ul>
           </div>
@@ -260,70 +362,135 @@
     </div>
   </section>
 
-  <!-- Projects --------------------------------------------------------- -->
-  <section class="section" id="projects">
-    <div class="container">
-      <div class="section-head">
-        <span class="section-num">03</span>
-        <h2>Projects</h2>
-        <span class="section-rule" aria-hidden="true"></span>
-      </div>
+  <!-- Projects — pinned horizontal stage --------------------------------- -->
+  <section class="section pin-stage" id="projects" data-pin>
+    <div class="pin-sticky">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-num">03</span>
+          <h2>Projects</h2>
+          <span class="section-rule" aria-hidden="true"></span>
+        </div>
 
-      <div class="card-grid" data-stagger>
+        <div class="pin-track" data-stagger>
 
-        <article class="card reveal">
-          <p class="card-index">01</p>
-          <h3><a href="/projects/ai-chat-summarizer.html">AI Chat Summarizer</a></h3>
-          <p>
-            Turns meeting transcripts and uploaded documents into structured, investor-ready summaries —
-            key decisions, action points, deadlines and a confidence assessment.
-          </p>
-          <ul class="tags">
-            <li>Python</li><li>Flask</li><li>GPT-4</li><li>PyMuPDF</li>
-          </ul>
-          <p class="card-links">
-            <a href="/projects/ai-chat-summarizer.html">Read more →</a>
-            <a href="https://github.com/SauravChauhan666/AI-Chat-Summarizer" target="_blank" rel="noopener">Code ↗</a>
-          </p>
-        </article>
+          <article class="card">
+            <div class="card-face grid-ground" data-draw aria-hidden="true">
+              <svg viewBox="0 0 320 180">
+                <g fill="none" stroke="var(--border-lit)" stroke-width="1">
+                  <rect class="fill" style="--i:0" x="24" y="40" width="66" height="86" rx="2"/>
+                  <rect class="fill" style="--i:4" x="212" y="40" width="84" height="86" rx="2"/>
+                </g>
+                <g stroke="var(--muted)" stroke-width="1" opacity="0.5">
+                  <path class="stroke" style="--i:0" pathLength="100" d="M34 56 H80"/>
+                  <path class="stroke" style="--i:1" pathLength="100" d="M34 68 H80"/>
+                  <path class="stroke" style="--i:1" pathLength="100" d="M34 80 H68"/>
+                  <path class="stroke" style="--i:2" pathLength="100" d="M34 92 H80"/>
+                  <path class="stroke" style="--i:2" pathLength="100" d="M34 104 H60"/>
+                </g>
+                <g fill="none" stroke="var(--accent-dim)" stroke-width="1.25">
+                  <path class="stroke" style="--i:3" pathLength="100" d="M90 83 H140"/>
+                  <rect class="fill" style="--i:3" x="140" y="66" width="52" height="34" rx="3" fill="var(--accent-soft)"/>
+                  <path class="stroke" style="--i:4" pathLength="100" d="M192 83 H212"/>
+                </g>
+                <g stroke="var(--accent)" stroke-width="2">
+                  <path class="stroke" style="--i:5" pathLength="100" d="M222 58 H286"/>
+                  <path class="stroke" style="--i:6" pathLength="100" d="M222 76 H268"/>
+                  <path class="stroke" style="--i:7" pathLength="100" d="M222 94 H278"/>
+                  <path class="stroke" style="--i:8" pathLength="100" d="M222 112 H252"/>
+                </g>
+                <text class="fill" style="--i:3" x="166" y="87" font-family="ui-monospace, monospace" font-size="10" fill="var(--accent)" text-anchor="middle">GPT-4</text>
+              </svg>
+            </div>
+            <p class="card-index">01</p>
+            <h3><a href="/projects/ai-chat-summarizer.html">AI Chat Summarizer</a></h3>
+            <p>
+              Turns meeting transcripts and uploaded documents into structured, investor-ready summaries —
+              key decisions, action points, deadlines and a confidence assessment.
+            </p>
+            <ul class="tags"><li>Python</li><li>Flask</li><li>GPT-4</li><li>PyMuPDF</li></ul>
+            <p class="card-links">
+              <a href="/projects/ai-chat-summarizer.html">Read more →</a>
+              <a href="https://github.com/SauravChauhan666/AI-Chat-Summarizer" target="_blank" rel="noopener">Code ↗</a>
+            </p>
+          </article>
 
-        <article class="card reveal">
-          <p class="card-index">02</p>
-          <h3><a href="/projects/quantalab.html">QuantaLab</a></h3>
-          <p>
-            A virtual trading platform over a pipeline that ingests and validates five years of historical
-            market data, with strategy backtesting and portfolio analytics.
-          </p>
-          <ul class="tags">
-            <li>Python</li><li>yfinance</li><li>Pandas</li><li>Scikit-learn</li>
-          </ul>
-          <p class="card-links">
-            <a href="/projects/quantalab.html">Read more →</a>
-            <a href="https://github.com/MrParindiyal/quantalab" target="_blank" rel="noopener">Code ↗</a>
-          </p>
-        </article>
+          <article class="card">
+            <div class="card-face grid-ground" data-draw aria-hidden="true">
+              <svg viewBox="0 0 320 180">
+                <g stroke="var(--border-lit)" stroke-width="1" opacity="0.6">
+                  <path class="stroke" style="--i:0" pathLength="100" d="M20 150 H300"/>
+                </g>
+                <g fill="var(--accent-dim)">
+                  <rect class="fx-candle" style="--i:0" x="34"  y="104" width="8" height="40"/>
+                  <rect class="fx-candle" style="--i:1" x="60"  y="92"  width="8" height="52"/>
+                  <rect class="fx-candle" style="--i:2" x="86"  y="110" width="8" height="34"/>
+                  <rect class="fx-candle" style="--i:3" x="112" y="76"  width="8" height="68"/>
+                  <rect class="fx-candle" style="--i:4" x="138" y="88"  width="8" height="56"/>
+                  <rect class="fx-candle" style="--i:5" x="164" y="60"  width="8" height="84"/>
+                  <rect class="fx-candle" style="--i:6" x="190" y="72"  width="8" height="72"/>
+                  <rect class="fx-candle" style="--i:7" x="216" y="46"  width="8" height="98"/>
+                  <rect class="fx-candle" style="--i:8" x="242" y="58"  width="8" height="86"/>
+                  <rect class="fx-candle" style="--i:9" x="268" y="34"  width="8" height="110"/>
+                </g>
+                <g fill="none" stroke="var(--accent)" stroke-width="1.75">
+                  <path class="stroke" style="--i:12" pathLength="100"
+                        d="M38 122 L64 112 L90 124 L116 98 L142 106 L168 82 L194 90 L220 66 L246 74 L272 50"/>
+                </g>
+                <text class="fill" style="--i:13" x="20" y="26" font-family="ui-monospace, monospace" font-size="10" fill="var(--muted)">5Y VALIDATED</text>
+              </svg>
+            </div>
+            <p class="card-index">02</p>
+            <h3><a href="/projects/quantalab.html">QuantaLab</a></h3>
+            <p>
+              A virtual trading platform over a pipeline that ingests and validates five years of historical
+              market data, with strategy backtesting and portfolio analytics.
+            </p>
+            <ul class="tags"><li>Python</li><li>yfinance</li><li>Pandas</li><li>Scikit-learn</li></ul>
+            <p class="card-links">
+              <a href="/projects/quantalab.html">Read more →</a>
+              <a href="https://github.com/MrParindiyal/quantalab" target="_blank" rel="noopener">Code ↗</a>
+            </p>
+          </article>
 
-        <article class="card reveal">
-          <p class="card-index">03</p>
-          <h3><a href="/projects/weed-detection.html">Laser-Based Weed Detection</a></h3>
-          <p>
-            A precision-agriculture system that segments weeds from crops on fused RGB + NIR imagery and
-            drives a laser removal mechanism in real time.
-          </p>
-          <ul class="tags">
-            <li>PyTorch</li><li>OpenCV</li><li>UNet</li><li>RGB + NIR</li>
-          </ul>
-          <p class="card-links">
-            <a href="/projects/weed-detection.html">Read more →</a>
-            <a href="https://github.com/SauravChauhan666/Laser-based-weed-detection" target="_blank" rel="noopener">Code ↗</a>
-          </p>
-        </article>
+          <article class="card">
+            <div class="card-face grid-ground" data-draw aria-hidden="true">
+              <svg viewBox="0 0 320 180">
+                <g fill="none" stroke="var(--border-lit)" stroke-width="1">
+                  <path class="stroke" style="--i:0" pathLength="100" d="M30 150 C70 120 60 70 96 44"/>
+                  <path class="stroke" style="--i:1" pathLength="100" d="M120 150 C150 118 142 74 176 48"/>
+                  <path class="stroke" style="--i:2" pathLength="100" d="M212 150 C240 122 236 78 268 52"/>
+                </g>
+                <g class="mask-layer" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1">
+                  <ellipse cx="72"  cy="104" rx="17" ry="11"/>
+                  <ellipse cx="158" cy="88"  rx="15" ry="10"/>
+                  <ellipse cx="248" cy="112" rx="16" ry="10"/>
+                </g>
+                <rect class="fx-scan" x="24" y="20" width="2" height="140" fill="var(--accent)"/>
+                <text class="fill" style="--i:4" x="24" y="172" font-family="ui-monospace, monospace" font-size="10" fill="var(--muted)">RGB + NIR · UNet</text>
+              </svg>
+            </div>
+            <p class="card-index">03</p>
+            <h3><a href="/projects/weed-detection.html">Laser-Based Weed Detection</a></h3>
+            <p>
+              A precision-agriculture system that segments weeds from crops on fused RGB + NIR imagery and
+              drives a laser removal mechanism in real time.
+            </p>
+            <ul class="tags"><li>PyTorch</li><li>OpenCV</li><li>UNet</li><li>RGB + NIR</li></ul>
+            <p class="card-links">
+              <a href="/projects/weed-detection.html">Read more →</a>
+              <a href="https://github.com/SauravChauhan666/Laser-based-weed-detection" target="_blank" rel="noopener">Code ↗</a>
+            </p>
+          </article>
 
+        </div>
+
+        <div class="pin-progress" aria-hidden="true"><span></span></div>
       </div>
     </div>
   </section>
 
-  <!-- Skills ----------------------------------------------------------- -->
+  <!-- Skills as architecture layers -------------------------------------- -->
   <section class="section" id="skills">
     <div class="container">
       <div class="section-head">
@@ -332,60 +499,36 @@
         <span class="section-rule" aria-hidden="true"></span>
       </div>
 
-      <div class="skills-grid" data-stagger>
-
-        <div class="skill-group">
-          <h3>Languages</h3>
-          <ul>
-            <li>TypeScript</li><li>JavaScript</li><li>Python</li><li>SQL</li>
-          </ul>
+      <div data-stagger>
+        <div class="layer">
+          <p class="layer-name">Client</p>
+          <ul><li>Vue.js</li><li>Nuxt 3 &amp; 4</li><li>HTML5</li><li>CSS3</li><li>Responsive UI</li><li>DevTools debugging</li></ul>
         </div>
-
-        <div class="skill-group">
-          <h3>Backend</h3>
-          <ul>
-            <li>NestJS</li><li>Node.js</li><li>REST API design</li><li>TypeORM</li>
-            <li>Shopify Admin API</li><li>Webhooks</li><li>OAuth / token flows</li><li>Flask</li>
-          </ul>
+        <div class="layer">
+          <p class="layer-name">Edge &amp; API</p>
+          <ul><li>NestJS</li><li>Node.js</li><li>REST API design</li><li>Shopify Admin API</li><li>Webhooks</li><li>OAuth / access tokens</li><li>Flask</li></ul>
         </div>
-
-        <div class="skill-group">
-          <h3>Frontend</h3>
-          <ul>
-            <li>Vue.js</li><li>Nuxt.js 3 &amp; 4</li><li>HTML5</li><li>CSS3</li>
-            <li>Responsive UI</li><li>DevTools debugging</li>
-          </ul>
+        <div class="layer">
+          <p class="layer-name">Data</p>
+          <ul><li>PostgreSQL</li><li>TypeORM</li><li>MySQL</li><li>SQLite</li><li>Schema design</li><li>Migrations &amp; indexing</li><li>Multi-tenant modelling</li></ul>
         </div>
-
-        <div class="skill-group">
-          <h3>Databases</h3>
-          <ul>
-            <li>PostgreSQL</li><li>MySQL</li><li>SQLite</li><li>Schema design</li>
-            <li>Migrations &amp; indexing</li><li>Multi-tenant modelling</li>
-          </ul>
+        <div class="layer">
+          <p class="layer-name">Model</p>
+          <ul><li>PyTorch</li><li>TensorFlow</li><li>Scikit-learn</li><li>OpenCV</li><li>LLM / OpenAI API</li><li>Pandas</li><li>NumPy</li></ul>
         </div>
-
-        <div class="skill-group">
-          <h3>AI / ML</h3>
-          <ul>
-            <li>PyTorch</li><li>TensorFlow</li><li>Scikit-learn</li><li>OpenCV</li>
-            <li>LLM / OpenAI API</li><li>Pandas</li><li>NumPy</li>
-          </ul>
+        <div class="layer">
+          <p class="layer-name">Ops</p>
+          <ul><li>Git</li><li>GitHub</li><li>Docker</li><li>Postman</li><li>Linux / Unix</li><li>Jupyter</li><li>Claude Code</li></ul>
         </div>
-
-        <div class="skill-group">
-          <h3>Tools &amp; DevOps</h3>
-          <ul>
-            <li>Git</li><li>GitHub</li><li>Docker</li><li>Postman</li>
-            <li>Linux / Unix</li><li>Jupyter</li><li>Claude Code</li>
-          </ul>
-        </div>
-
       </div>
+
+      <p class="muted mono" style="margin-top: 1.5rem;">
+        Languages: TypeScript · JavaScript · Python · SQL
+      </p>
     </div>
   </section>
 
-  <!-- Education -------------------------------------------------------- -->
+  <!-- Education ---------------------------------------------------------- -->
   <section class="section" id="education">
     <div class="container">
       <div class="section-head">
@@ -414,7 +557,7 @@
 
 </main>
 
-<!-- Contact / footer --------------------------------------------------- -->
+<!-- Contact / footer ----------------------------------------------------- -->
 <footer class="site-footer" id="contact">
   <div class="container">
     <div class="section-head">
