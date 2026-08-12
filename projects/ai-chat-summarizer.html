@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.remove("no-js");</script>
+
+<title>AI Chat Summarizer — Saurav Chauhan</title>
+<meta name="description" content="A Flask web app that turns meeting transcripts and uploaded PDF, DOCX and TXT documents into structured, investor-ready summaries using GPT-4 — key decisions, action points, deadlines and a confidence assessment.">
+<link rel="canonical" href="https://sauravchauhan666.github.io/projects/ai-chat-summarizer.html">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sauravchauhan666.github.io/projects/ai-chat-summarizer.html">
+<meta property="og:title" content="AI Chat Summarizer — Saurav Chauhan">
+<meta property="og:description" content="A Flask web app that turns meeting transcripts and uploaded documents into structured, investor-ready summaries using GPT-4.">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0b0d0e">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">SC</span>
+      <span class="brand-name">Saurav Chauhan</span>
+    </a>
+
+    <nav class="nav" aria-label="Sections">
+      <a href="/#about"><span class="nav-num">01</span>About</a>
+      <a href="/#experience"><span class="nav-num">02</span>Experience</a>
+      <a href="/#projects"><span class="nav-num">03</span>Projects</a>
+      <a href="/#skills"><span class="nav-num">04</span>Skills</a>
+      <a href="/#education"><span class="nav-num">05</span>Education</a>
+      <a href="/#contact"><span class="nav-num">06</span>Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn-resume" href="/resume.pdf" target="_blank" rel="noopener">Résumé ↓</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-mobile">Menu</button>
+    </div>
+  </div>
+
+  <div class="nav-mobile" id="nav-mobile">
+    <ul>
+      <li><a href="/#about">01 &nbsp;About</a></li>
+      <li><a href="/#experience">02 &nbsp;Experience</a></li>
+      <li><a href="/#projects">03 &nbsp;Projects</a></li>
+      <li><a href="/#skills">04 &nbsp;Skills</a></li>
+      <li><a href="/#education">05 &nbsp;Education</a></li>
+      <li><a href="/#contact">06 &nbsp;Contact</a></li>
+    </ul>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page-head">
+    <div class="container" data-parallax="0.1">
+      <a class="back-link" href="/#projects" data-enter>← Back to projects</a>
+      <h1 data-enter><span class="mask"><span class="mask-inner">AI Chat Summarizer</span></span></h1>
+      <p class="hero-summary" data-enter>
+        A web app that turns long meeting transcripts and uploaded documents into structured,
+        investor-ready summaries — key decisions, action points, deadlines and a confidence assessment.
+      </p>
+      <p class="page-meta" data-enter>
+        <span>Python · Flask · OpenAI GPT-4 · PyMuPDF · python-docx</span>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/SauravChauhan666/AI-Chat-Summarizer" target="_blank" rel="noopener">View code ↗</a>
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <h2>The problem</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <div class="prose">
+        <p>
+          The context that matters most in a company is usually the hardest to retrieve: it's buried in an
+          hour-long meeting transcript or a forty-page document, written in the shorthand of the people who
+          were in the room. Anyone outside that room — a new hire, an investor, a stakeholder in another
+          team — has to read all of it to find the three things they actually need.
+        </p>
+        <p>
+          Naïve summarization doesn't solve this. Ask a model to "summarize this transcript" and you get a
+          shorter transcript: still narrative, still jargon-dense, and with no distinction between a decision
+          that was made and an idea someone floated. The output has to be <em>structured</em> to be useful,
+          and it has to be honest about how confident it is.
+        </p>
+      </div>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <h2>Approach</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <div class="prose">
+        <p>The app is built around three ideas.</p>
+      </div>
+      <ul class="bullets" style="margin-top: 1rem;">
+        <li>
+          <strong>Parse before you prompt.</strong> Uploaded files are normalised to clean text before the
+          model ever sees them — PyMuPDF for PDFs, python-docx for Word files, direct read for plain text.
+          Feeding a model raw extraction artefacts (broken columns, repeated headers, page furniture) is the
+          fastest way to get a bad summary, so the parsing layer is treated as part of the prompt.
+        </li>
+        <li>
+          <strong>Ask for a schema, not a summary.</strong> Rather than a single "summarize this" call, the
+          prompt requests specific fields — key decisions, action points, deadlines, open questions — with a
+          <strong>confidence assessment</strong> attached. The structure is what makes the output scannable,
+          and the confidence field is what makes it trustworthy: a summary that flags its own uncertainty is
+          far more useful than one that states everything with equal conviction.
+        </li>
+        <li>
+          <strong>Keep the conversation.</strong> Summaries are a starting point, not an endpoint — the
+          follow-up question is where the value is. Chat history is persisted so a document can be
+          interrogated across a session, and conversations can be exported so the output leaves the app.
+        </li>
+      </ul>
+      <div class="prose" style="margin-top: 1.5rem;">
+        <p class="muted">
+          This grew directly out of the work I did at Prodigal AI, where I built a context-aware chat and
+          document-summarization feature into an in-house messaging app and designed the prompt pipelines
+          that turned dense technical conversation history into investor-friendly summaries.
+        </p>
+      </div>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <h2>Stack</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <ul class="stack-list" data-stagger>
+        <li>
+          <span class="stack-name">Flask</span>
+          <span class="stack-why">Small enough to stay out of the way. The interesting logic here is the
+            parsing and prompting, not the web layer — a heavier framework would have added structure the
+            project didn't need.</span>
+        </li>
+        <li>
+          <span class="stack-name">OpenAI GPT-4</span>
+          <span class="stack-why">Long-context reasoning over transcripts, and reliable enough at following
+            a requested output structure that the response can be rendered as fields rather than prose.</span>
+        </li>
+        <li>
+          <span class="stack-name">PyMuPDF</span>
+          <span class="stack-why">Fast, accurate PDF text extraction that preserves reading order —
+            which matters enormously when the next step is feeding it to a language model.</span>
+        </li>
+        <li>
+          <span class="stack-name">python-docx</span>
+          <span class="stack-why">Reads Word documents at the paragraph level, so structure survives into
+            the extracted text instead of collapsing into an undifferentiated blob.</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">04</span>
+        <h2>Outcome</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <div class="prose">
+        <p>
+          A working web app that accepts PDF, DOCX and TXT uploads alongside pasted transcripts, and returns
+          a structured summary with decisions, action points, deadlines and a confidence assessment — with
+          persistent chat history and conversation export on top.
+        </p>
+        <p class="muted">
+          The lesson I took from it: with LLM features, most of the quality is decided before the API call.
+          Clean the input, ask for a shape, and the model does the rest. The prompt is the last mile, not
+          the whole road.
+        </p>
+      </div>
+    </section>
+
+    <nav class="page-nav" aria-label="Project navigation">
+      <a href="/#projects">← All projects</a>
+      <a href="/projects/quantalab.html">Next: QuantaLab →</a>
+    </nav>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <h2>Let's talk.</h2>
+        <p class="muted prose">
+          I'm open to full-stack and backend roles. The fastest way to reach me is email — I read everything.
+        </p>
+      </div>
+      <ul class="contact-links">
+        <li><a class="btn btn-primary" href="mailto:2401sauravchauhan@gmail.com">Email me</a></li>
+        <li><a class="btn" href="https://github.com/SauravChauhan666" target="_blank" rel="noopener">GitHub ↗</a></li>
+        <li><a class="btn" href="/resume.pdf" target="_blank" rel="noopener">Résumé ↓</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Saurav Chauhan</p>
+      <p>Hand-written HTML &amp; CSS. No framework.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.remove("no-js");</script>
+
+<title>Laser-Based Weed Detection — Saurav Chauhan</title>
+<meta name="description" content="A precision-agriculture system that segments weeds from crops on fused RGB + NIR imagery with a UNet at ~90% accuracy, served through a real-time PyTorch/OpenCV inference pipeline driving a laser removal mechanism.">
+<link rel="canonical" href="https://sauravchauhan666.github.io/projects/weed-detection.html">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sauravchauhan666.github.io/projects/weed-detection.html">
+<meta property="og:title" content="Laser-Based Weed Detection — Saurav Chauhan">
+<meta property="og:description" content="Semantic segmentation of weeds on RGB + NIR imagery at ~90% accuracy, driving a laser removal mechanism in real time.">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0b0d0e">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">SC</span>
+      <span class="brand-name">Saurav Chauhan</span>
+    </a>
+
+    <nav class="nav" aria-label="Sections">
+      <a href="/#about"><span class="nav-num">01</span>About</a>
+      <a href="/#experience"><span class="nav-num">02</span>Experience</a>
+      <a href="/#projects"><span class="nav-num">03</span>Projects</a>
+      <a href="/#skills"><span class="nav-num">04</span>Skills</a>
+      <a href="/#education"><span class="nav-num">05</span>Education</a>
+      <a href="/#contact"><span class="nav-num">06</span>Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn-resume" href="/resume.pdf" target="_blank" rel="noopener">Résumé ↓</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-mobile">Menu</button>
+    </div>
+  </div>
+
+  <div class="nav-mobile" id="nav-mobile">
+    <ul>
+      <li><a href="/#about">01 &nbsp;About</a></li>
+      <li><a href="/#experience">02 &nbsp;Experience</a></li>
+      <li><a href="/#projects">03 &nbsp;Projects</a></li>
+      <li><a href="/#skills">04 &nbsp;Skills</a></li>
+      <li><a href="/#education">05 &nbsp;Education</a></li>
+      <li><a href="/#contact">06 &nbsp;Contact</a></li>
+    </ul>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page-head">
+    <div class="container" data-parallax="0.1">
+      <a class="back-link" href="/#projects" data-enter>← Back to projects</a>
+      <h1 data-enter><span class="mask"><span class="mask-inner">Laser-Based Weed Detection<br>&amp; Removal System</span></span></h1>
+      <p class="hero-summary" data-enter>
+        A precision-agriculture system that tells weeds from crops pixel by pixel on fused RGB + near-infrared
+        imagery, then drives a laser to remove them — cutting herbicide use without touching the crop.
+      </p>
+      <p class="page-meta" data-enter>
+        <span>Python · PyTorch · OpenCV · UNet (RGB + NIR)</span>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/SauravChauhan666/Laser-based-weed-detection" target="_blank" rel="noopener">View code ↗</a>
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <h2>The problem</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <div class="prose">
+        <p>
+          Herbicide is sprayed across an entire field to kill the small fraction of it that is weeds. The
+          chemicals reach the soil, the groundwater and the crop, and the weeds steadily evolve resistance.
+          The obvious alternative — remove weeds individually — has always been limited by the cost of
+          labour.
+        </p>
+        <p>
+          The computer vision problem underneath it is genuinely hard, and it's a segmentation problem rather
+          than a detection one. A weed growing between crop rows overlaps its neighbours; leaves interleave;
+          both are green, both are leafy, and both are lit by the same variable sunlight. A bounding box is
+          the wrong output — a laser needs to know <em>which pixels</em> are safe to fire at. Get it wrong
+          and you burn the crop you were protecting.
+        </p>
+      </div>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <h2>Approach</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <ul class="bullets">
+        <li>
+          <strong>Add a channel the eye doesn't have.</strong> In visible light, weed and crop are both
+          "green" — the signal separating them is weak. Healthy vegetation reflects strongly in
+          <strong>near-infrared</strong>, and it does so differently by species and leaf structure. Fusing
+          NIR with RGB gives the network a discriminative channel that simply doesn't exist in a normal
+          photograph. This was the single decision that made the rest of the problem tractable.
+        </li>
+        <li>
+          <strong>UNet for the segmentation.</strong> UNet's encoder–decoder with skip connections is built
+          for exactly this shape of problem: the encoder captures the context needed to know <em>what</em>
+          something is, and the skip connections carry the fine spatial detail forward so the decoder knows
+          precisely <em>where</em> its boundaries are. For a laser targeting task, boundary precision is the
+          whole game.
+        </li>
+        <li>
+          <strong>A real-time inference pipeline, not a notebook.</strong> A model that segments correctly
+          but slowly is useless on a moving rig. OpenCV handles capture and pre-processing, PyTorch runs
+          inference, and the resulting weed-vs-crop mask feeds straight into targeting — one continuous
+          loop from camera to laser.
+        </li>
+        <li>
+          <strong>Fail safe by construction.</strong> The asymmetry matters: missing a weed costs a little
+          yield, but hitting a crop destroys the plant. The targeting stage acts on confident weed regions,
+          so uncertainty resolves toward not firing.
+        </li>
+      </ul>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <h2>Stack</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <ul class="stack-list" data-stagger>
+        <li>
+          <span class="stack-name">UNet</span>
+          <span class="stack-why">Designed for dense, pixel-level segmentation and known to work from
+            relatively small annotated datasets — which is the normal situation in agriculture, where
+            labelled RGB + NIR field imagery is scarce and expensive to produce.</span>
+        </li>
+        <li>
+          <span class="stack-name">PyTorch</span>
+          <span class="stack-why">Adapting a standard UNet to accept a fused multi-spectral input rather
+            than three RGB channels means editing the model definition directly. PyTorch makes that a few
+            lines instead of a fight with the framework.</span>
+        </li>
+        <li>
+          <span class="stack-name">OpenCV</span>
+          <span class="stack-why">Camera capture, channel alignment between the RGB and NIR sources, and
+            per-frame pre-processing — fast enough in C++ under the hood to keep the loop real-time.</span>
+        </li>
+        <li>
+          <span class="stack-name">RGB + NIR imagery</span>
+          <span class="stack-why">The input choice that carries the accuracy. Near-infrared reflectance
+            separates vegetation types that look nearly identical in visible light.</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">04</span>
+        <h2>Outcome</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+
+      <div class="metrics" data-stagger>
+        <div class="metric">
+          <p class="metric-value" data-count="90" data-prefix="~" data-suffix="%">~90%</p>
+          <p class="metric-label">segmentation accuracy on RGB + NIR imagery</p>
+        </div>
+        <div class="metric">
+          <p class="metric-value">Real-time</p>
+          <p class="metric-label">inference pipeline, camera through to targeting</p>
+        </div>
+        <div class="metric">
+          <p class="metric-value">↓ Herbicide</p>
+          <p class="metric-label">targeted removal in place of blanket spraying</p>
+        </div>
+      </div>
+
+      <div class="prose">
+        <p class="muted">
+          The result I keep coming back to is that the biggest accuracy gain came from the input, not the
+          architecture. Adding the NIR channel did more than any amount of tuning would have. It's the same
+          instinct I use in backend work: before optimising the thing you built, check whether you're
+          feeding it the right information in the first place.
+        </p>
+      </div>
+    </section>
+
+    <nav class="page-nav" aria-label="Project navigation">
+      <a href="/projects/quantalab.html">← Previous: QuantaLab</a>
+      <a href="/#projects">All projects →</a>
+    </nav>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <h2>Let's talk.</h2>
+        <p class="muted prose">
+          I'm open to full-stack and backend roles. The fastest way to reach me is email — I read everything.
+        </p>
+      </div>
+      <ul class="contact-links">
+        <li><a class="btn btn-primary" href="mailto:2401sauravchauhan@gmail.com">Email me</a></li>
+        <li><a class="btn" href="https://github.com/SauravChauhan666" target="_blank" rel="noopener">GitHub ↗</a></li>
+        <li><a class="btn" href="/resume.pdf" target="_blank" rel="noopener">Résumé ↓</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Saurav Chauhan</p>
+      <p>Hand-written HTML &amp; CSS. No framework.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.remove("no-js");</script>
+
+<title>QuantaLab — Saurav Chauhan</title>
+<meta name="description" content="A virtual stock trading platform built on a pipeline that ingests and validates five years of historical market data, with strategy backtesting and portfolio risk/return analytics.">
+<link rel="canonical" href="https://sauravchauhan666.github.io/projects/quantalab.html">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://sauravchauhan666.github.io/projects/quantalab.html">
+<meta property="og:title" content="QuantaLab — Saurav Chauhan">
+<meta property="og:description" content="A virtual trading platform over a validated five-year market data pipeline, with strategy backtesting and portfolio analytics.">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0b0d0e">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">SC</span>
+      <span class="brand-name">Saurav Chauhan</span>
+    </a>
+
+    <nav class="nav" aria-label="Sections">
+      <a href="/#about"><span class="nav-num">01</span>About</a>
+      <a href="/#experience"><span class="nav-num">02</span>Experience</a>
+      <a href="/#projects"><span class="nav-num">03</span>Projects</a>
+      <a href="/#skills"><span class="nav-num">04</span>Skills</a>
+      <a href="/#education"><span class="nav-num">05</span>Education</a>
+      <a href="/#contact"><span class="nav-num">06</span>Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn-resume" href="/resume.pdf" target="_blank" rel="noopener">Résumé ↓</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-mobile">Menu</button>
+    </div>
+  </div>
+
+  <div class="nav-mobile" id="nav-mobile">
+    <ul>
+      <li><a href="/#about">01 &nbsp;About</a></li>
+      <li><a href="/#experience">02 &nbsp;Experience</a></li>
+      <li><a href="/#projects">03 &nbsp;Projects</a></li>
+      <li><a href="/#skills">04 &nbsp;Skills</a></li>
+      <li><a href="/#education">05 &nbsp;Education</a></li>
+      <li><a href="/#contact">06 &nbsp;Contact</a></li>
+    </ul>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page-head">
+    <div class="container" data-parallax="0.1">
+      <a class="back-link" href="/#projects" data-enter>← Back to projects</a>
+      <h1 data-enter><span class="mask"><span class="mask-inner">QuantaLab</span></span></h1>
+      <p class="hero-summary" data-enter>
+        A stock market simulation and analytics tool — a virtual trading platform built on a pipeline that
+        ingests and validates five years of historical market data, with strategy backtesting and portfolio
+        risk/return dashboards.
+      </p>
+      <p class="page-meta" data-enter>
+        <span>Python · yfinance · Pandas / NumPy · Scikit-learn · Matplotlib</span>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/MrParindiyal/quantalab" target="_blank" rel="noopener">View code ↗</a>
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <h2>The problem</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <div class="prose">
+        <p>
+          Learning how markets behave is expensive, and the expensive part is not the tuition — it's the
+          money you lose while forming intuition. Paper trading fixes the risk but usually keeps the worst
+          property of the real thing: you make a decision, then wait weeks to find out whether it was any
+          good.
+        </p>
+        <p>
+          QuantaLab compresses that loop. Trade against real historical data with simulated capital, then
+          backtest the strategy over five years of it and see the answer immediately — including the part
+          most beginner tools omit, which is the risk you took to get the return.
+        </p>
+      </div>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <h2>Approach</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <div class="prose">
+        <p>
+          Built as part of a team. The layer I want to talk about is the least glamorous one, because it
+          turned out to be the one that mattered.
+        </p>
+      </div>
+      <ul class="bullets" style="margin-top: 1rem;">
+        <li>
+          <strong>The data pipeline is the product.</strong> Five years of historical data pulled via
+          yfinance is not clean data. There are missing sessions, holidays that differ by exchange, splits
+          and dividends that silently rewrite price history, and tickers that stop existing. Every one of
+          those produces a backtest that looks fine and is wrong. So ingestion is paired with a
+          <strong>validation step</strong> — gaps, continuity and adjustment checks — before anything
+          downstream is allowed to touch it.
+        </li>
+        <li>
+          <strong>Simulation on top of validated data.</strong> Users buy and sell against real market
+          prices with simulated capital, so positions, cash and portfolio value move exactly as they would
+          have. The mechanics are real; only the money isn't.
+        </li>
+        <li>
+          <strong>Backtesting as a first-class feature.</strong> A strategy is run over the full historical
+          window rather than a hand-picked slice, which is what stops a strategy from looking brilliant
+          purely because it was tested on a bull run.
+        </li>
+        <li>
+          <strong>Dashboards that show risk, not just return.</strong> Matplotlib visualisations of
+          portfolio performance and risk/return — because a strategy that returns 30% with wild drawdowns
+          and one that returns 25% smoothly are not the same strategy, and a returns-only chart makes them
+          look identical.
+        </li>
+      </ul>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <h2>Stack</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <ul class="stack-list" data-stagger>
+        <li>
+          <span class="stack-name">yfinance</span>
+          <span class="stack-why">Free, no-key access to years of historical OHLCV data. The trade-off is
+            data quality, which is precisely why the validation layer exists.</span>
+        </li>
+        <li>
+          <span class="stack-name">Pandas / NumPy</span>
+          <span class="stack-why">Time-indexed operations — resampling, rolling windows, alignment across
+            tickers — are what backtesting <em>is</em>. Doing this by hand in loops would be both slower and
+            more error-prone.</span>
+        </li>
+        <li>
+          <span class="stack-name">Scikit-learn</span>
+          <span class="stack-why">Predictive modelling on the validated dataset, with a consistent
+            fit/predict interface that makes swapping models a one-line change rather than a rewrite.</span>
+        </li>
+        <li>
+          <span class="stack-name">Matplotlib</span>
+          <span class="stack-why">Full control over the analytical charts. For dashboards where the axes
+            and annotations carry the meaning, being able to specify every element beats a prettier default.</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="detail-block reveal">
+      <div class="section-head">
+        <span class="section-num">04</span>
+        <h2>Outcome</h2>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+
+      <div class="metrics" data-stagger>
+        <div class="metric">
+          <p class="metric-value" data-count="5" data-suffix=" yrs">5 yrs</p>
+          <p class="metric-label">of historical market data ingested and validated</p>
+        </div>
+        <div class="metric">
+          <p class="metric-value" data-count="0" data-prefix="₹">₹0</p>
+          <p class="metric-label">of real capital at risk while learning</p>
+        </div>
+        <div class="metric">
+          <p class="metric-value">Full-window</p>
+          <p class="metric-label">backtesting, not cherry-picked date ranges</p>
+        </div>
+      </div>
+
+      <div class="prose">
+        <p class="muted">
+          What I took away: in anything data-driven, the validation layer is where correctness is won or
+          lost. A model trained on unvalidated market data doesn't fail loudly — it produces confident,
+          plausible, wrong numbers. That's a far more dangerous failure than a crash.
+        </p>
+      </div>
+    </section>
+
+    <nav class="page-nav" aria-label="Project navigation">
+      <a href="/projects/ai-chat-summarizer.html">← Previous: AI Chat Summarizer</a>
+      <a href="/projects/weed-detection.html">Next: Weed Detection →</a>
+    </nav>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <h2>Let's talk.</h2>
+        <p class="muted prose">
+          I'm open to full-stack and backend roles. The fastest way to reach me is email — I read everything.
+        </p>
+      </div>
+      <ul class="contact-links">
+        <li><a class="btn btn-primary" href="mailto:2401sauravchauhan@gmail.com">Email me</a></li>
+        <li><a class="btn" href="https://github.com/SauravChauhan666" target="_blank" rel="noopener">GitHub ↗</a></li>
+        <li><a class="btn" href="/resume.pdf" target="_blank" rel="noopener">Résumé ↓</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Saurav Chauhan</p>
+      <p>Hand-written HTML &amp; CSS. No framework.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/main.js" defer></script>
+</body>
+</html>
