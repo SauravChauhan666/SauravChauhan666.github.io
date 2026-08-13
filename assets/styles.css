@@ -453,9 +453,9 @@ button:focus-visible {
 }
 
 .section-head h2 {
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   line-height: 1.15;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   font-weight: 650;
 }
 
@@ -853,7 +853,8 @@ p + p { margin-top: var(--s-2); }
 
 .site-footer {
   border-top: 1px solid var(--border);
-  padding-block: var(--s-8);
+  /* Extra headroom above the content is the flight's airspace */
+  padding-block: var(--s-12) var(--s-8);
   margin-top: var(--s-6);
 }
 
@@ -867,12 +868,17 @@ p + p { margin-top: var(--s-2); }
   .footer-top { grid-template-columns: 1fr auto; align-items: end; }
 }
 
+/* The closing statement gets display scale — the page's second-largest type
+   after the name, so the site ends as confidently as it opens. */
 .footer-top h2 {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  letter-spacing: -0.03em;
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
   font-weight: 700;
   margin-bottom: var(--s-2);
 }
+
+.footer-top h2 .tail { color: var(--accent); }
 
 .contact-links {
   display: flex;
@@ -952,6 +958,27 @@ p + p { margin-top: var(--s-2); }
 
 .is-entered .mask-inner,
 .mask-inner.is-entered { transform: none; }
+
+/* --- Section headings arrive the same way -------------------------------
+   The hero h1's masked line reveal, systematized: JS wraps every section
+   heading in the same .mask/.mask-inner pair and arms its container. The
+   heading slides out of the clip and the rule draws to the edge beside it.
+   No-JS and reduced motion never get armed, so the default is simply text. */
+
+.mask-armed h2 .mask-inner {
+  transform: translateY(110%);
+  transition: transform 800ms var(--ease-out);
+}
+
+.mask-armed.is-visible h2 .mask-inner { transform: none; }
+
+.mask-armed .section-rule {
+  transform: translateY(-0.4em) scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 900ms var(--ease-meas) 200ms;
+}
+
+.mask-armed.is-visible .section-rule { transform: translateY(-0.4em) scaleX(1); }
 
 /* --- Reveal on scroll --- */
 
@@ -1538,6 +1565,91 @@ p + p { margin-top: var(--s-2); }
 .toc a.is-active { color: var(--accent); border-left-color: var(--accent); }
 
 
+/* --- Scroll-linked image frames ------------------------------------------
+   Three nested layers, because the three motions must not compete for one
+   transform property:
+
+     .shot         the frame  — clip-path wipe on enter   (one-shot, CSS)
+     .shot-inner   the settle — scale 1.12 → 1 on enter   (one-shot, CSS)
+     .shot img     the drift  — parallax                  (per-frame, from JS)
+
+   If the scale and the drift shared an element, the per-frame transform write
+   would clobber the CSS transition every frame and the settle would never play.
+
+   The image is (100 + 2×drift)% of the frame's height and sits drift% above it,
+   so a ±drift% travel never exposes an edge. --shot-drift is the single source
+   of truth: CSS sizes the image from it, JS reads it back in the measure pass.
+
+   Frame borrows the .console language — bar, border, radius — deliberately. A
+   bright screenshot needs a bezel between it and a near-black page, and reusing
+   the instrument frame already on the site beats inventing a second one. */
+
+.shot {
+  --shot-ar: 21 / 9;
+  --shot-drift: 9;
+  margin: var(--s-3) 0 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.shot-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-1);
+  padding: 0.5rem var(--s-2);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.shot-frame {
+  position: relative;
+  aspect-ratio: var(--shot-ar);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.shot-inner { position: absolute; inset: 0; }
+
+.shot img {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: calc(var(--shot-drift) * -1%);
+  height: calc(100% + var(--shot-drift) * 2%);
+  object-fit: cover;
+  display: block;
+}
+
+.shot figcaption {
+  padding: var(--s-2);
+  font-size: 0.875rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+/* The finished state is the default: with JS off or reduced motion on, the
+   image is simply there — unclipped, unscaled, no half-played animation. Only
+   .js-fx introduces a state to animate out of. */
+.js-fx .shot-frame {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 900ms var(--ease-out);
+}
+
+.js-fx .shot.is-visible .shot-frame { clip-path: inset(0 0 0 0); }
+
+.js-fx .shot-inner {
+  transform: scale(1.12);
+  transition: transform 1100ms var(--ease-out);
+  will-change: transform;
+}
+
+.js-fx .shot.is-visible .shot-inner { transform: none; }
+
+
 /* 14. Kinetic layer ======================================================== */
 /* The four effects requested explicitly. Every one is gated on .js-fx (added
    only when reduced motion is off) and on a pointer/width guard, so none of it
@@ -1546,11 +1658,18 @@ p + p { margin-top: var(--s-2); }
 /* --- Hero particle field --- */
 
 .hero { position: relative; }
-.hero > .container { position: relative; z-index: 1; }
+.hero-sticky { position: relative; }
+.hero .container { position: relative; z-index: 1; }
 
+/* width/height are load-bearing, not belt-and-braces: <canvas> is a replaced
+   element, so an absolutely positioned one resolves to its intrinsic 300x150 and
+   drops `bottom` from the equation. With inset:0 alone the particle field draws
+   into a 300x150 box in the corner instead of filling the hero. */
 .hero-canvas {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: 0;
   pointer-events: none;
   opacity: 0;
@@ -1690,6 +1809,185 @@ html.js-pin .pin-progress { display: block; }
   transform-origin: left;
 }
 
+
+/* --- Pinned hero: the request packet ---
+   Same scaffold as the projects stage — a tall stage, a sticky viewport-height
+   frame, one scroll-derived progress value. Layered on only when .js-hero-pin
+   is present, so no-JS, reduced motion, and any viewport too short or narrow to
+   hold the hero in 100vh all keep the ordinary hero. */
+
+html.js-hero-pin .hero { height: var(--hero-stage-h, 190vh); }
+
+html.js-hero-pin .hero-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* The packet only exists while the stage is pinned; without the pin there is no
+   travel to map it onto, so it never appears rather than sitting inert. */
+.packet { opacity: 0; }
+
+html.js-hero-pin .packet {
+  opacity: 0;
+  transition: opacity 260ms var(--ease);
+}
+
+html.js-hero-pin .packet.is-on { opacity: 1; }
+
+.packet-core { fill: var(--accent); }
+.packet-halo { fill: var(--accent); opacity: 0.16; }
+
+/* Direction carries meaning: a solid dot descending is the request, a hollow
+   ring climbing back is the response. */
+.packet.is-up .packet-core {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.packet.is-up .packet-halo { opacity: 0.08; }
+
+.packet-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  fill: var(--accent);
+}
+
+/* Stations light as the packet reaches them. Stroke only — opacity belongs to
+   [data-draw], which owns the entrance, and the two must not fight. */
+.station { transition: stroke 240ms var(--ease); }
+.station.is-lit { stroke: var(--accent); }
+
+/* --- Boot sequence ---
+   Built entirely by JS, so no-JS visitors never see a cover they cannot lift.
+   First visit per session only; any input skips it. The overlay lifts with the
+   veil's easing so arriving and navigating share one motion. */
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 560ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.boot.is-lifting { transform: translateY(-101%); }
+
+.boot-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 1150ms var(--ease-meas);
+}
+
+.boot.is-running .boot-bar { transform: scaleX(1); }
+
+.boot-panel {
+  width: min(24rem, 82vw);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.boot-title {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: var(--s-2);
+}
+
+.boot-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75em;
+  margin-top: 0.55rem;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+}
+
+.boot-line.on { opacity: 1; transform: none; }
+
+.boot-leader {
+  flex: 1;
+  border-bottom: 1px dotted var(--border-lit);
+  transform: translateY(-0.25em);
+}
+
+.boot-ok,
+.boot-done { color: var(--accent); }
+
+/* --- Scroll-reactive tape ---
+   When JS drives the marquee, the CSS loop stands down. Everything else about
+   the tape (fade mask, hover colour) is unchanged. */
+
+html.js-tape .marquee-track { animation: none; }
+
+/* --- Contact flight ---
+   A paper plane crosses the footer on a scroll-scrubbed flight path — the one
+   vehicle this site can justify, since the section it flies over says "the
+   fastest way to reach me is email". Scene DOM is JS-built; without JS or with
+   reduced motion the footer is simply a footer. */
+
+.site-footer {
+  position: relative;
+  overflow: hidden;
+}
+
+.site-footer .container { position: relative; z-index: 1; }
+
+.flight {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 500ms var(--ease);
+}
+
+.flight.is-on { opacity: 1; }
+
+.flight-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Solid hairline rather than dashes: a dashed stroke cannot be progressively
+   revealed with the dashoffset trick, and at this opacity it reads as a vapor
+   trail either way. */
+.flight-trail {
+  fill: none;
+  stroke: var(--accent-dim);
+  stroke-width: 1;
+  opacity: 0.55;
+}
+
+.flight-plane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 54px;
+  height: 54px;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
 
 /* Reduced motion: the kinetic layer never initialises (JS gate), and anything
    that did render settles instantly. */

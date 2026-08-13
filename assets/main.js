@@ -2,14 +2,15 @@
    Motion layer. No dependencies, no build step.
 
    INSTRUMENT MODULES          KINETIC MODULES
-     1  mobile menu              11  hero particle field
-     2  entrance                 12  cursor ring
-     3  reveal (+ stagger wave)  13  page-transition veil
-     4  counters + odometer      14  pinned horizontal projects
-     5  scroll progress
-     6  header hide/show
-     7  parallax
-     8  magnetic buttons
+     0  boot sequence            11  hero particle field
+     1  mobile menu              12  cursor ring
+     2  entrance                 13  page-transition veil
+     3  reveal (+ stagger wave)  14  pinned horizontal projects
+     4  counters + odometer      15  scroll-linked image frames
+     5  scroll progress          16  pinned hero request packet
+     6  header hide/show         17  section-head line reveals
+     7  parallax                 18  scroll-reactive tape
+     8  magnetic buttons         19  contact flight
      9  card sheen
     10  eased scrolling + anchors
         console  ·  marquee pause  ·  scroll-spy  ·  toc-spy
@@ -70,6 +71,79 @@
   }
 
 
+  /* 0. Boot sequence ------------------------------------------------------- */
+
+  /* The arrival moment: a four-line system boot in the site's own console
+     voice, ending on the same 200 OK the hero packet carries. Hard limits so
+     it stays a greeting and not a gate: ~1.3s total, any input skips it, it
+     runs once per session, and no-JS or reduced-motion visitors never see it
+     because the DOM only exists here. Returns a gate that entrance waits on. */
+  var onBoot = (function bootSequence() {
+    var cbs = [], done = false;
+
+    function release() {
+      done = true;
+      var list = cbs;
+      cbs = [];
+      list.forEach(function (cb) { cb(); });
+    }
+
+    var skip = reduce;
+    if (!skip) {
+      try {
+        skip = sessionStorage.getItem("sc-boot") === "1";
+        sessionStorage.setItem("sc-boot", "1");
+      } catch (err) { skip = true; }   // storage blocked → never replay per page
+    }
+    if (skip) return function (cb) { cb(); };
+
+    var el = document.createElement("div");
+    el.className = "boot";
+    el.setAttribute("aria-hidden", "true");
+    el.innerHTML =
+      '<span class="boot-bar"></span>' +
+      '<div class="boot-panel">' +
+        '<p class="boot-title">saurav chauhan · portfolio</p>' +
+        '<p class="boot-line"><span>init motion layer</span><span class="boot-leader"></span><span class="boot-ok">ok</span></p>' +
+        '<p class="boot-line"><span>route request path</span><span class="boot-leader"></span><span class="boot-ok">ok</span></p>' +
+        '<p class="boot-line"><span>load readouts</span><span class="boot-leader"></span><span class="boot-ok">ok</span></p>' +
+        '<p class="boot-line boot-done">200 OK · ready</p>' +
+      '</div>';
+    document.body.appendChild(el);
+    root.style.overflow = "hidden";
+
+    var lines = el.querySelectorAll(".boot-line");
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        el.classList.add("is-running");
+        lines.forEach(function (line, i) {
+          setTimeout(function () { line.classList.add("on"); }, 160 + i * 170);
+        });
+      });
+    });
+
+    var lifted = false;
+    function lift() {
+      if (lifted) return;
+      lifted = true;
+      root.style.overflow = "";
+      el.classList.add("is-lifting");
+      release();   // entrance plays underneath while the cover lifts
+      setTimeout(function () { el.remove(); }, 620);
+    }
+
+    var timer = setTimeout(lift, 1280);
+    ["keydown", "pointerdown", "wheel", "touchstart"].forEach(function (ev) {
+      window.addEventListener(ev, function () {
+        clearTimeout(timer);
+        lift();
+      }, { once: true, passive: true });
+    });
+
+    return function (cb) { done ? cb() : cbs.push(cb); };
+  })();
+
+
   /* 1. Mobile menu -------------------------------------------------------- */
 
   var toggle = document.querySelector(".nav-toggle");
@@ -106,9 +180,13 @@
     var items = document.querySelectorAll("[data-enter]");
     if (!items.length) return;
     items.forEach(function (el, i) { el.style.setProperty("--d", (i * 90) + "ms"); });
-    requestAnimationFrame(function () {
+    /* Waits on the boot gate: on a first visit the entrance plays underneath
+       the lifting cover; every other time the gate is already open. */
+    onBoot(function () {
       requestAnimationFrame(function () {
-        items.forEach(function (el) { el.classList.add("is-entered"); });
+        requestAnimationFrame(function () {
+          items.forEach(function (el) { el.classList.add("is-entered"); });
+        });
       });
     });
   })();
@@ -609,6 +687,326 @@
   })();
 
 
+  /* 17. Section-head line reveals ------------------------------------------- */
+
+  /* The hero h1's masked reveal, made the house style: every section heading
+     (and the footer's closing line) is wrapped in the same .mask pair and
+     released when scrolled to, with the section rule drawing out beside it.
+     Wrapping happens here, not in markup, so no-JS pages ship plain text. */
+  (function headingMasks() {
+    if (reduce || !supportsIO) return;
+
+    var containers = Array.prototype.slice.call(document.querySelectorAll(".section-head"));
+    var footTop = document.querySelector(".footer-top");
+    if (footTop) containers.push(footTop);
+
+    var armed = [];
+    containers.forEach(function (box) {
+      var h2 = box.querySelector("h2");
+      if (!h2) return;
+      h2.innerHTML = '<span class="mask"><span class="mask-inner">' + h2.innerHTML + "</span></span>";
+      box.classList.add("mask-armed");
+      armed.push(box);
+    });
+    if (!armed.length) return;
+
+    /* Observation starts once the boot cover is gone, so a first visit's
+       above-fold headings play in view instead of behind the overlay. */
+    onBoot(function () {
+      once(armed, function (el) { el.classList.add("is-visible"); },
+        { rootMargin: "0px 0px -12% 0px", threshold: 0.2 });
+    });
+  })();
+
+
+  /* 18. Scroll-reactive tape ------------------------------------------------ */
+
+  /* The tech tape stops being a fixed-speed loop: it drifts on its own, speeds
+     up with a downward scroll, runs backwards on an upward one, and eases to a
+     stop under the pointer so it can be read. CSS animation remains the
+     fallback everywhere this does not initialise. */
+  /* No pointer gate: the CSS loop already runs everywhere, so driving the same
+     motion from the rAF loop costs nothing extra on touch — and flick-scrolls
+     make the reaction MORE visible there, not less. The clamp bounds the burst. */
+  (function tape() {
+    var wrap = document.querySelector(".marquee");
+    var track = document.querySelector(".marquee-track");
+    if (!wrap || !track || reduce) return;
+    var group = track.querySelector(".marquee-group");
+    if (!group) return;
+
+    root.classList.add("js-tape");
+
+    var x = 0, w = 0, base = 0, boost = 0;
+    var lastY = window.scrollY, visible = true, hovered = false;
+
+    function measure() { w = group.getBoundingClientRect().width; }
+
+    frameJobs.push(function () {
+      if (!visible || !w) return false;
+      base = lerp(base, hovered ? 0 : 0.55, 0.08);
+      boost *= 0.9;
+      x -= base + clamp(boost, -16, 16);
+      x = -(((-x % w) + w) % w);   // keep x in (-w, 0]; two identical groups make the wrap seamless
+      track.style.transform = "translate3d(" + x.toFixed(2) + "px,0,0)";
+      return true;   // continuous while visible, like the particle field
+    });
+
+    window.addEventListener("scroll", function () {
+      var y = window.scrollY;
+      boost += (y - lastY) * 0.08;
+      lastY = y;
+      requestFrame();
+    }, { passive: true });
+
+    wrap.addEventListener("pointerenter", function () { hovered = true; });
+    wrap.addEventListener("pointerleave", function () { hovered = false; });
+    window.addEventListener("resize", measure);
+
+    if (supportsIO) {
+      new IntersectionObserver(function (entries) {
+        visible = entries[0].isIntersecting;
+        if (visible) requestFrame();
+      }).observe(wrap);
+    }
+
+    measure();
+    requestFrame();
+  })();
+
+
+  /* 19. Contact flight ------------------------------------------------------ */
+
+  /* A paper plane crosses the contact footer, scrubbed by scroll: it advances
+     as the footer scrolls up, flies backwards when you do, and banks to follow
+     its own curve. Position AND heading are both sampled from the trail path
+     itself, so the plane and its vapor trail cannot drift apart. The footer is
+     the last element on every page, so t = (vh - top) / height runs exactly
+     0 → 1 between the footer entering and the page bottoming out. */
+  (function flight() {
+    var footer = document.querySelector(".site-footer");
+    if (!footer || reduce) return;
+
+    var scene = document.createElement("div");
+    scene.className = "flight";
+    scene.setAttribute("aria-hidden", "true");
+    scene.innerHTML =
+      '<svg class="flight-svg" preserveAspectRatio="none"><path class="flight-trail"/></svg>' +
+      '<svg class="flight-plane" viewBox="0 0 40 40">' +
+        '<path d="M4 8 L38 20 L4 32 L12 20 Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round"/>' +
+        '<path d="M12 20 L38 20" fill="none" stroke="var(--accent-dim)" stroke-width="1.25"/>' +
+      '</svg>';
+    footer.appendChild(scene);
+
+    var trail = scene.querySelector(".flight-trail");
+    var plane = scene.querySelector(".flight-plane");
+    if (!trail.getTotalLength) { scene.remove(); return; }
+
+    var HALF = 27;   // half the plane's CSS box; rotation happens around its centre
+    var len = 0, lastT = -1;
+
+    function measure() {
+      var w = footer.offsetWidth, h = footer.offsetHeight;
+      scene.querySelector(".flight-svg").setAttribute("viewBox", "0 0 " + w + " " + h);
+      /* Take-off off-screen left, climb over the heading, and LAND high right —
+         inside the scene, not past it, because the page bottom is where most
+         visitors come to rest and the resting composition should still have
+         the plane in it, parked at the end of its trail. */
+      trail.setAttribute("d",
+        "M" + (-70) + " " + (h * 0.78) +
+        " C " + (w * 0.30) + " " + (h * 0.72) +
+        ", " + (w * 0.55) + " " + (h * 0.08) +
+        ", " + (w * 0.90) + " " + (h * 0.16));
+      len = trail.getTotalLength();
+      trail.style.strokeDasharray = len;
+      trail.style.strokeDashoffset = len;
+      lastT = -1;
+    }
+
+    function update() {
+      var r = footer.getBoundingClientRect();                    // read
+      var vh = window.innerHeight;
+      if (r.top > vh + 80 || !len) return false;
+      var t = clamp((vh - r.top) / r.height, 0, 1);
+      if (t === lastT) return false;
+      lastT = t;
+
+      var at = t * len;                                           // write
+      var pt = trail.getPointAtLength(at);
+      var ahead = trail.getPointAtLength(Math.min(at + 2, len));
+      var ang = Math.atan2(ahead.y - pt.y, ahead.x - pt.x) * 180 / Math.PI;
+      plane.style.transform =
+        "translate3d(" + (pt.x - HALF).toFixed(1) + "px," + (pt.y - HALF).toFixed(1) + "px,0)" +
+        " rotate(" + ang.toFixed(1) + "deg)";
+      trail.style.strokeDashoffset = (len - at).toFixed(1);
+      return false;   // scroll-driven, never self-sustaining
+    }
+
+    frameJobs.push(update);
+    window.addEventListener("scroll", requestFrame, { passive: true });
+    window.addEventListener("resize", function () { measure(); requestFrame(); });
+    window.addEventListener("load", function () { measure(); requestFrame(); });
+
+    measure();
+    scene.classList.add("is-on");
+    requestFrame();
+  })();
+
+
+  /* 16. Pinned hero — the request packet ------------------------------------ */
+
+  /* The vehicle-on-a-path idea, in this site's own vocabulary: the hero pins and
+     a request rides the pipeline it already draws. Scroll down and it descends
+     browser → Nuxt → NestJS → PostgreSQL; scroll up and the response climbs back.
+
+     Position comes from getPointAtLength() on a path that lives in the markup,
+     so the route stays hand-editable in the SVG and JS never hard-codes a
+     coordinate. Same stage/sticky/progress shape as module 14. */
+  (function heroPacket() {
+    var hero = document.querySelector("[data-hero-pin]");
+    if (!hero || reduce) return;
+
+    var path = hero.querySelector(".packet-path");
+    var packet = hero.querySelector(".packet");
+    if (!path || !packet || !path.getTotalLength) return;
+
+    var label = packet.querySelector(".packet-label");
+    var stations = Array.prototype.slice.call(hero.querySelectorAll(".station"));
+    var stationY = stations.map(function (s) {
+      return parseFloat(s.getAttribute("y")) + parseFloat(s.getAttribute("height")) / 2;
+    });
+
+    /* Height as well as width: pinning a hero that cannot fit in 100vh would
+       crop it, and .hero-sticky hides its overflow. */
+    var fits = window.matchMedia("(min-width: 64rem) and (min-height: 44rem)");
+    var len = 0, on = false, lastP = -1, lit = [];
+
+    function enable() {
+      root.classList.add("js-hero-pin");
+      on = true;
+      len = path.getTotalLength();
+    }
+
+    function disable() {
+      root.classList.remove("js-hero-pin");
+      on = false;
+      packet.classList.remove("is-on", "is-up");
+      stations.forEach(function (s) { s.classList.remove("is-lit"); });
+      lit = [];
+    }
+
+    function update() {
+      if (!on) return false;
+      var r = hero.getBoundingClientRect();                       // read
+      var total = hero.offsetHeight - window.innerHeight;
+      var p = total > 0 ? clamp(-r.top / total, 0, 1) : 0;
+      if (p === lastP) return false;
+
+      var pt = path.getPointAtLength(p * len);                    // write
+      packet.setAttribute("transform", "translate(" + pt.x.toFixed(2) + "," + pt.y.toFixed(2) + ")");
+      packet.classList.toggle("is-on", p > 0.004 && p < 0.996);
+
+      /* Only flip on a real move — an equal frame would otherwise reset the
+         direction to "request" every time scrolling settles. */
+      if (lastP >= 0 && Math.abs(p - lastP) > 0.0004) {
+        var up = p < lastP;
+        packet.classList.toggle("is-up", up);
+        if (label) label.textContent = up ? "200 OK ↑" : "GET /search ↓";
+      }
+
+      for (var i = 0; i < stations.length; i++) {
+        var near = Math.abs(pt.y - stationY[i]) < 17;
+        if (near !== lit[i]) {                                     // toggle only on change
+          stations[i].classList.toggle("is-lit", near);
+          lit[i] = near;
+        }
+      }
+
+      lastP = p;
+      return false;   // scroll-driven, never self-sustaining
+    }
+
+    function sync() {
+      if (fits.matches) { if (!on) enable(); }
+      else if (on) disable();
+      update();
+    }
+
+    frameJobs.push(update);
+    window.addEventListener("scroll", function () { if (on) requestFrame(); }, { passive: true });
+    window.addEventListener("resize", function () { sync(); requestFrame(); });
+    if (fits.addEventListener) fits.addEventListener("change", sync);
+    sync();
+    requestFrame();
+  })();
+
+
+  /* 15. Scroll-linked image frames ----------------------------------------- */
+
+  /* Three motions per figure. Two are one-shot and live entirely in CSS (the
+     clip wipe and the scale settle, fired by one class). Only the parallax
+     drift needs a frame, and it writes to a different element than the settle
+     so the two never contend for one transform.
+
+     Travel: the frame's top edge at the viewport bottom is p=0, its bottom edge
+     at the viewport top is p=1. Offset runs +drift → -drift across that, so the
+     image lags the page rather than leading it. */
+  (function scrollImages() {
+    var shots = document.querySelectorAll("[data-shot]");
+    if (!shots.length) return;
+
+    /* Enter state first — under reduced motion .js-fx is absent, so the CSS has
+       no initial state and this class toggle is inert. Costs nothing to keep. */
+    once(shots, function (el) { el.classList.add("is-visible"); },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.15 });
+
+    if (reduce) return;
+
+    var items = [];
+    Array.prototype.forEach.call(shots, function (el) {
+      var img = el.querySelector("img");
+      var frame = el.querySelector(".shot-frame");
+      if (img && frame) items.push({ el: el, img: img, frame: frame, drift: 0 });
+    });
+    if (!items.length) return;
+
+    /* --shot-drift is declared in CSS and read back here, so the image height
+       and the travel distance can never drift apart (they would silently, if
+       this number were typed in two places). */
+    function measure() {
+      items.forEach(function (it) {
+        var d = parseFloat(getComputedStyle(it.el).getPropertyValue("--shot-drift"));
+        if (isNaN(d)) d = 9;
+        it.drift = it.frame.offsetHeight * (d / 100);
+      });
+    }
+
+    frameJobs.push(function () {
+      var vh = window.innerHeight;
+      var rects = items.map(function (it) {                 // read every rect...
+        return it.el.getBoundingClientRect();
+      });
+      for (var i = 0; i < items.length; i++) {              // ...then write
+        var r = rects[i];
+        if (r.bottom < -80 || r.top > vh + 80) continue;     // off-screen, skip the write
+        var p = clamp((vh - r.top) / (vh + r.height), 0, 1);
+        items[i].img.style.transform =
+          "translate3d(0," + ((0.5 - p) * 2 * items[i].drift).toFixed(2) + "px,0)";
+      }
+      return false;   // driven by scroll, never self-sustaining
+    });
+
+    window.addEventListener("scroll", requestFrame, { passive: true });
+    window.addEventListener("resize", function () { measure(); requestFrame(); });
+    /* Re-measure once images have real dimensions; aspect-ratio holds the box so
+       this cannot shift layout, but the frame height is only final after load. */
+    window.addEventListener("load", function () { measure(); requestFrame(); });
+
+    measure();
+    requestFrame();
+  })();
+
+
   /* 10. Eased scrolling ---------------------------------------------------- */
 
   var scroller = (function () {
@@ -774,7 +1172,7 @@
   if (motionQuery.addEventListener) {
     motionQuery.addEventListener("change", function (e) {
       if (e.matches) {
-        root.classList.remove("js-fx", "js-pin", "js-scroll");
+        root.classList.remove("js-fx", "js-pin", "js-scroll", "js-hero-pin", "js-tape");
         document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("is-visible"); });
       }
     });
