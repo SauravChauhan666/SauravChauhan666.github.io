@@ -38,7 +38,7 @@
   "address": { "@type": "PostalAddress", "addressRegion": "Delhi NCR", "addressCountry": "IN" },
   "worksFor": { "@type": "Organization", "name": "BitQit Pvt Ltd" },
   "alumniOf": { "@type": "CollegeOrUniversity", "name": "University School of Automation and Robotics, GGSIPU" },
-  "knowsAbout": ["TypeScript", "NestJS", "Vue.js", "Nuxt.js", "PostgreSQL", "Shopify API", "Python", "PyTorch"],
+  "knowsAbout": ["TypeScript", "NestJS", "Vue.js", "Nuxt.js", "PostgreSQL", "Redis", "BullMQ", "Shopify API", "Python", "PyTorch"],
   "sameAs": [
     "https://github.com/SauravChauhan666",
     "https://leetcode.com/u/2401sauravchauhan"
@@ -184,13 +184,13 @@
       <div class="marquee-group">
         <span>TypeScript</span><span>NestJS</span><span>Vue.js</span><span>Nuxt 4</span>
         <span>PostgreSQL</span><span>TypeORM</span><span>Shopify API</span><span>Webhooks</span>
-        <span>OAuth</span><span>Python</span><span>PyTorch</span><span>OpenCV</span>
+        <span>OAuth</span><span>Redis</span><span>BullMQ</span><span>Python</span><span>PyTorch</span><span>OpenCV</span>
         <span>Docker</span><span>Linux</span>
       </div>
       <div class="marquee-group">
         <span>TypeScript</span><span>NestJS</span><span>Vue.js</span><span>Nuxt 4</span>
         <span>PostgreSQL</span><span>TypeORM</span><span>Shopify API</span><span>Webhooks</span>
-        <span>OAuth</span><span>Python</span><span>PyTorch</span><span>OpenCV</span>
+        <span>OAuth</span><span>Redis</span><span>BullMQ</span><span>Python</span><span>PyTorch</span><span>OpenCV</span>
         <span>Docker</span><span>Linux</span>
       </div>
     </div>
@@ -214,7 +214,7 @@
             holding the two together.
           </p>
           <p class="muted">
-            I'm finishing a B.Tech in Artificial Intelligence &amp; Data Science at GGSIPU, which is where the
+            I graduated in May 2026 with a B.Tech in Artificial Intelligence &amp; Data Science from GGSIPU, which is where the
             other half of my work comes from — computer vision, PyTorch, and LLM integration. It's a useful
             combination: I can build the product and the model behind it.
           </p>
@@ -235,7 +235,7 @@
             <dd>NestJS · TypeORM · PostgreSQL · Nuxt 4</dd>
             <dt class="micro">Based in</dt>
             <dd>Delhi NCR, India</dd>
-            <dt class="micro">Graduating</dt>
+            <dt class="micro">Graduated</dt>
             <dd>May 2026 · CGPA 8.7</dd>
           </dl>
         </aside>
@@ -325,10 +325,18 @@
             <ul class="bullets">
               <li class="k">
                 <span class="kicker">Tokens</span>
-                <span>Implemented support for Shopify's move to <strong>expiring offline access tokens</strong>
-                  across the merchant portal and the Shopify backend — schema columns and migration, token
-                  service and refresh handling — and replaced a migration cron with an operator-driven admin
-                  endpoint after code review.</span>
+                <span>Implemented the migration from permanent to <strong>Shopify's expiring offline access
+                  tokens</strong> across the NestJS backend and the legacy Koa merchant portal — 1-hour access
+                  tokens refreshed automatically with 90-day refresh tokens, a cron job that rotates them before
+                  they lapse, Slack alerts for failed rotations, and an operator-driven admin endpoint for
+                  migrating existing stores, which replaced a migration cron after code review.</span>
+              </li>
+              <li class="k">
+                <span class="kicker">Queues</span>
+                <span>Built <strong>bullmq-groups</strong>, an in-house replacement for BullMQ Pro's paid groups
+                  feature — per-shop job concurrency on Redis using Lua scripts, with a reconciler that recovers
+                  slots after worker crashes. It has since been released as open source on npm
+                  (<a href="https://github.com/sparq-ai/bullmq-groups" target="_blank" rel="noopener">code ↗</a>).</span>
               </li>
               <li class="k">
                 <span class="kicker">Analytics</span>
@@ -342,12 +350,6 @@
                   <code>ALL</code> ScriptTag scopes across live merchant stores, wrote read-only
                   Node/PostgreSQL tooling to identify every affected client, validated the plan against a local
                   mock Shopify API, and handed the team a runnable migration path.</span>
-              </li>
-              <li class="k">
-                <span class="kicker">Migration</span>
-                <span>Migrated the dashboard frontend from <strong>Nuxt 3 to Nuxt 4</strong> against an
-                  undocumented upgrade path — reverse-engineered the breaking changes from build failures and
-                  shipped it with no regressions.</span>
               </li>
             </ul>
           </div>
@@ -523,11 +525,11 @@
         </div>
         <div class="layer">
           <p class="layer-name">Edge &amp; API</p>
-          <ul><li>NestJS</li><li>Node.js</li><li>REST API design</li><li>Shopify Admin API</li><li>Webhooks</li><li>OAuth / access tokens</li><li>Flask</li></ul>
+          <ul><li>NestJS</li><li>Node.js</li><li>REST API design</li><li>Shopify Admin API</li><li>Webhooks</li><li>OAuth / access tokens</li><li>BullMQ job queues</li><li>Koa</li><li>Flask</li></ul>
         </div>
         <div class="layer">
           <p class="layer-name">Data</p>
-          <ul><li>PostgreSQL</li><li>TypeORM</li><li>MySQL</li><li>SQLite</li><li>Schema design</li><li>Migrations &amp; indexing</li><li>Multi-tenant modelling</li></ul>
+          <ul><li>PostgreSQL</li><li>TypeORM</li><li>Redis &amp; Lua scripts</li><li>MySQL</li><li>SQLite</li><li>Schema design</li><li>Migrations &amp; indexing</li><li>Multi-tenant modelling</li></ul>
         </div>
         <div class="layer">
           <p class="layer-name">Model</p>
@@ -540,7 +542,7 @@
       </div>
 
       <p class="muted mono" style="margin-top: 1.5rem;">
-        Languages: TypeScript · JavaScript · Python · SQL
+        Languages: TypeScript · JavaScript · Python · SQL · Lua
       </p>
     </div>
   </section>
