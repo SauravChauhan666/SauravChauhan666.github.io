@@ -297,33 +297,6 @@
                   merchants configure it from, including a live storefront preview and theme config export.</span>
               </li>
               <li class="k">
-                <span class="kicker kicker--warn">Security</span>
-                <span>Found and fixed a <strong>cross-store IDOR vulnerability</strong> that let a request scoped
-                  to one merchant store reach another store's data on a shared multi-tenant platform.</span>
-              </li>
-            </ul>
-
-            <!-- The one element on this site that shows a bug being closed
-                 rather than claiming one was. Ships in the patched state. -->
-            <figure class="console" data-console data-state="patched">
-              <div class="console-bar">
-                <span class="console-title">cross-store IDOR — collections lookup</span>
-                <span class="console-tabs" role="tablist" aria-label="Query state">
-                  <button type="button" role="tab" data-set="vulnerable" aria-selected="false" tabindex="-1">vulnerable</button>
-                  <button type="button" role="tab" data-set="patched" aria-selected="true" tabindex="0">patched</button>
-                </span>
-              </div>
-
-              <pre class="console-body"><code><span class="ln"><span class="kw">SELECT</span> id, store_id, handle <span class="kw">FROM</span> collections</span><span class="ln"><span class="kw">WHERE</span>  handle = $1</span><span class="ln ln--fix"><span class="kw">AND</span>    store_id = $2</span><span class="ln"> </span><span class="row">  id   | store_id | handle</span><span class="row"> ------+----------+--------------</span><span class="row">  1042 | 7731     | summer-sale</span><span class="row row--foreign">  2287 | <span class="leak">9004</span>     | summer-sale</span><span class="console-count"><span class="c1"> (2 rows)</span><span class="c2 ok"> (1 row)</span></span></code></pre>
-
-              <figcaption>
-                Without the tenant predicate, a lookup scoped to one store returned a row belonging to another.
-                Adding <code>store_id</code> to the WHERE clause scopes every query to the calling store.
-              </figcaption>
-            </figure>
-
-            <ul class="bullets">
-              <li class="k">
                 <span class="kicker">Tokens</span>
                 <span>Implemented the migration from permanent to <strong>Shopify's expiring offline access
                   tokens</strong> across the NestJS backend and the legacy Koa merchant portal — 1-hour access
@@ -331,6 +304,31 @@
                   they lapse, Slack alerts for failed rotations, and an operator-driven admin endpoint for
                   migrating existing stores, which replaced a migration cron after code review.</span>
               </li>
+            </ul>
+
+            <!-- Before/after of the token exchange. Reuses the console's two states:
+                 "vulnerable" = permanent token, "patched" = expiring token.
+                 Ships in the expiring state, so JS-off and reduced motion show the result. -->
+            <figure class="console" data-console data-state="patched">
+              <div class="console-bar">
+                <span class="console-title">expiring offline tokens — token exchange</span>
+                <span class="console-tabs" role="tablist" aria-label="Token type">
+                  <button type="button" role="tab" data-set="vulnerable" aria-selected="false" tabindex="-1">permanent</button>
+                  <button type="button" role="tab" data-set="patched" aria-selected="true" tabindex="0">expiring</button>
+                </span>
+              </div>
+
+              <pre class="console-body"><code><span class="ln"><span class="kw">POST</span> /admin/oauth/access_token</span><span class="ln ln--fix">  expiring: <span class="kw">1</span></span><span class="ln"> </span><span class="row">{</span><span class="row">  "access_token":  "shpat_••••••••",</span><span class="row row--foreign">  <span class="leak">// never expires: valid until the app is uninstalled</span></span><span class="ln ln--fix">  "expires_in":    3600,             <span class="ok">// 1 hour</span></span><span class="ln ln--fix">  "refresh_token": "shprt_••••••••",</span><span class="ln ln--fix">  "refresh_token_expires_in": 7776000  <span class="ok">// 90 days</span></span><span class="row">}</span><span class="console-count"><span class="c1"> (stored once, never rotated)</span><span class="c2 ok"> (refreshed on demand · rotated at day 60 · Slack alert at day 70)</span></span></code></pre>
+
+              <figcaption>
+                A permanent offline token stays valid until the merchant uninstalls the app, so a leaked one never
+                stops working. Expiring tokens last an hour: Sparq refreshes them on demand with a 90-day refresh
+                token, a keep-alive cron rotates any refresh token that reaches 60 days, and Slack is alerted if
+                one reaches 70 without rotating.
+              </figcaption>
+            </figure>
+
+            <ul class="bullets">
               <li class="k">
                 <span class="kicker">Queues</span>
                 <span>Built <strong>bullmq-groups</strong>, an in-house replacement for BullMQ Pro's paid groups
